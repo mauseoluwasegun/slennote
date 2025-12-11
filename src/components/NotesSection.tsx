@@ -1,0 +1,1118 @@
+import React, { useState, useEffect, useRef } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { Copy, Check, Plus, X, Edit3, Mic } from "lucide-react";
+import { DrawingPinIcon, DrawingPinFilledIcon } from "@radix-ui/react-icons";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+
+// Cursor Dark Theme colors for syntax highlighting
+const cursorDarkTheme: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: "#d4d4d4",
+    background: "#1e1e1e",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+  },
+  'pre[class*="language-"]': {
+    color: "#d4d4d4",
+    background: "#1e1e1e",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+    padding: "1em",
+    margin: "0",
+    overflow: "auto" as const,
+  },
+  comment: { color: "#6a9955", fontStyle: "italic" },
+  prolog: { color: "#6a9955" },
+  doctype: { color: "#6a9955" },
+  cdata: { color: "#6a9955" },
+  punctuation: { color: "#d4d4d4" },
+  property: { color: "#9cdcfe" },
+  tag: { color: "#569cd6" },
+  boolean: { color: "#569cd6" },
+  number: { color: "#b5cea8" },
+  constant: { color: "#4fc1ff" },
+  symbol: { color: "#4fc1ff" },
+  deleted: { color: "#f44747" },
+  selector: { color: "#d7ba7d" },
+  "attr-name": { color: "#92c5f6" },
+  string: { color: "#ce9178" },
+  char: { color: "#ce9178" },
+  builtin: { color: "#569cd6" },
+  inserted: { color: "#6a9955" },
+  operator: { color: "#d4d4d4" },
+  entity: { color: "#dcdcaa" },
+  url: { color: "#9cdcfe", textDecoration: "underline" },
+  variable: { color: "#9cdcfe" },
+  atrule: { color: "#569cd6" },
+  "attr-value": { color: "#ce9178" },
+  function: { color: "#dcdcaa" },
+  "function-variable": { color: "#dcdcaa" },
+  keyword: { color: "#569cd6" },
+  regex: { color: "#d16969" },
+  important: { color: "#569cd6", fontWeight: "bold" },
+  bold: { fontWeight: "bold" },
+  italic: { fontStyle: "italic" },
+  namespace: { opacity: 0.7 },
+  "class-name": { color: "#4ec9b0" },
+  parameter: { color: "#9cdcfe" },
+  decorator: { color: "#dcdcaa" },
+};
+
+// Cursor Light Theme colors for syntax highlighting
+const cursorLightTheme: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: "#000000",
+    background: "#ffffff",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+  },
+  'pre[class*="language-"]': {
+    color: "#000000",
+    background: "#ffffff",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+    padding: "1em",
+    margin: "0",
+    overflow: "auto" as const,
+  },
+  comment: { color: "#008000", fontStyle: "italic" },
+  prolog: { color: "#008000" },
+  doctype: { color: "#008000" },
+  cdata: { color: "#008000" },
+  punctuation: { color: "#000000" },
+  property: { color: "#001080" },
+  tag: { color: "#0000ff" },
+  boolean: { color: "#0000ff" },
+  number: { color: "#098658" },
+  constant: { color: "#0070c1" },
+  symbol: { color: "#0070c1" },
+  deleted: { color: "#e51400" },
+  selector: { color: "#a31515" },
+  "attr-name": { color: "#0451a5" },
+  string: { color: "#a31515" },
+  char: { color: "#a31515" },
+  builtin: { color: "#0000ff" },
+  inserted: { color: "#008000" },
+  operator: { color: "#000000" },
+  entity: { color: "#795e26" },
+  url: { color: "#001080", textDecoration: "underline" },
+  variable: { color: "#001080" },
+  atrule: { color: "#0000ff" },
+  "attr-value": { color: "#a31515" },
+  function: { color: "#795e26" },
+  "function-variable": { color: "#795e26" },
+  keyword: { color: "#0000ff" },
+  regex: { color: "#811f3f" },
+  important: { color: "#0000ff", fontWeight: "bold" },
+  bold: { fontWeight: "bold" },
+  italic: { fontStyle: "italic" },
+  namespace: { opacity: 0.7 },
+  "class-name": { color: "#267f99" },
+  parameter: { color: "#001080" },
+  decorator: { color: "#795e26" },
+};
+
+// Cursor Cloud Theme colors for syntax highlighting
+const cursorCloudTheme: { [key: string]: React.CSSProperties } = {
+  'code[class*="language-"]': {
+    color: "#171717",
+    background: "#ededed",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+  },
+  'pre[class*="language-"]': {
+    color: "#171717",
+    background: "#ededed",
+    fontFamily:
+      "SF Mono, Monaco, Cascadia Code, Roboto Mono, Consolas, Courier New, monospace",
+    fontSize: "13px",
+    textAlign: "left" as const,
+    whiteSpace: "pre" as const,
+    wordSpacing: "normal",
+    wordBreak: "normal" as const,
+    wordWrap: "normal" as const,
+    lineHeight: "1.5",
+    tabSize: 4,
+    hyphens: "none" as const,
+    padding: "1em",
+    margin: "0",
+    overflow: "auto" as const,
+  },
+  comment: { color: "#6a9955", fontStyle: "italic" },
+  prolog: { color: "#6a9955" },
+  doctype: { color: "#6a9955" },
+  cdata: { color: "#6a9955" },
+  punctuation: { color: "#171717" },
+  property: { color: "#001080" },
+  tag: { color: "#0000ff" },
+  boolean: { color: "#0000ff" },
+  number: { color: "#098658" },
+  constant: { color: "#0070c1" },
+  symbol: { color: "#0070c1" },
+  deleted: { color: "#e51400" },
+  selector: { color: "#a31515" },
+  "attr-name": { color: "#0451a5" },
+  string: { color: "#a31515" },
+  char: { color: "#a31515" },
+  builtin: { color: "#0000ff" },
+  inserted: { color: "#008000" },
+  operator: { color: "#171717" },
+  entity: { color: "#795e26" },
+  url: { color: "#001080", textDecoration: "underline" },
+  variable: { color: "#001080" },
+  atrule: { color: "#0000ff" },
+  "attr-value": { color: "#a31515" },
+  function: { color: "#795e26" },
+  "function-variable": { color: "#795e26" },
+  keyword: { color: "#0000ff" },
+  regex: { color: "#811f3f" },
+  important: { color: "#0000ff", fontWeight: "bold" },
+  bold: { fontWeight: "bold" },
+  italic: { fontStyle: "italic" },
+  namespace: { opacity: 0.7 },
+  "class-name": { color: "#267f99" },
+  parameter: { color: "#001080" },
+  decorator: { color: "#795e26" },
+};
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { Id } from "../../convex/_generated/dataModel";
+import { ConfirmDialog } from "./ConfirmDialog";
+import { useTheme } from "../context/ThemeContext";
+import { VoiceInput, VoiceInputRef } from "./VoiceInput";
+
+interface NotesSectionProps {
+  date: string;
+  expandedNoteId: string | null;
+  onNoteExpanded: () => void;
+  focusNoteId?: Id<"notes"> | null;
+}
+
+interface Note {
+  _id: Id<"notes">;
+  _creationTime: number;
+  userId: string;
+  date: string;
+  title?: string;
+  content: string;
+  order?: number;
+  collapsed?: boolean;
+  pinnedToTop?: boolean;
+}
+
+interface NoteItemProps {
+  note: Note;
+  onUpdateTitle: (id: Id<"notes">, title: string) => void;
+  onUpdateContent: (id: Id<"notes">, content: string) => void;
+  onToggleCollapse: (id: Id<"notes">, collapsed: boolean) => void;
+  onDeleteClick: (id: Id<"notes">) => void;
+  onTogglePin: (id: Id<"notes">, pinned: boolean) => void;
+  shouldFocus?: boolean;
+}
+
+// Types for parsed content blocks
+type ContentBlock =
+  | { type: "text"; content: string }
+  | { type: "code"; content: string; language: string };
+
+// Parse markdown-style code blocks from plain text
+function parseContentBlocks(content: string): Array<ContentBlock> {
+  const blocks: Array<ContentBlock> = [];
+  const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = codeBlockRegex.exec(content)) !== null) {
+    // Add text before code block
+    if (match.index > lastIndex) {
+      const textContent = content.slice(lastIndex, match.index);
+      if (textContent.trim()) {
+        blocks.push({ type: "text", content: textContent });
+      }
+    }
+
+    // Add code block
+    const language = match[1] || "text";
+    const codeContent = match[2];
+    blocks.push({ type: "code", content: codeContent, language });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining text after last code block
+  if (lastIndex < content.length) {
+    const textContent = content.slice(lastIndex);
+    if (textContent.trim()) {
+      blocks.push({ type: "text", content: textContent });
+    }
+  }
+
+  // If no code blocks found, return entire content as text
+  if (blocks.length === 0 && content.trim()) {
+    blocks.push({ type: "text", content });
+  }
+
+  return blocks;
+}
+
+function NoteItem({
+  note,
+  onUpdateTitle,
+  onUpdateContent,
+  onToggleCollapse,
+  onDeleteClick,
+  onTogglePin,
+  shouldFocus = false,
+}: NoteItemProps) {
+  const { theme } = useTheme();
+  const [copied, setCopied] = useState(false);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [titleInput, setTitleInput] = useState(note.title || "Untitled");
+  const [contentInput, setContentInput] = useState(note.content);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [copiedBlockIndex, setCopiedBlockIndex] = useState<number | null>(null);
+  const [voiceError, setVoiceError] = useState<string | null>(null);
+  const contentTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const titleInputRef = useRef<HTMLInputElement>(null);
+  const isTypingRef = useRef(false);
+  const cursorPositionRef = useRef<number | null>(null);
+  const [textareaHeight, setTextareaHeight] = useState<number>(200);
+  const isResizingRef = useRef(false);
+  const voiceInputRef = useRef<VoiceInputRef | null>(null);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: note._id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.9 : 1,
+  };
+
+  useEffect(() => {
+    if (!isTypingRef.current && note.content !== contentInput) {
+      setContentInput(note.content);
+    }
+  }, [note.content]);
+
+  useEffect(() => {
+    if (note.title !== titleInput) {
+      setTitleInput(note.title || "");
+    }
+  }, [note.title]);
+
+  useEffect(() => {
+    if (shouldFocus) {
+      setIsEditMode(true);
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        // Place cursor at end
+        const length = textareaRef.current?.value.length || 0;
+        textareaRef.current?.setSelectionRange(length, length);
+      }, 100);
+    }
+  }, [shouldFocus]);
+
+  // Track interim transcript separately for real-time display
+  const interimTranscriptRef = useRef<string>("");
+  const baseContentRef = useRef<string>("");
+  const voiceInsertPositionRef = useRef<number>(0);
+
+  const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
+    console.log("📝 Notes handleVoiceTranscript:", { transcript, isFinal, hasTextarea: !!textareaRef.current });
+
+    // Even if textarea isn't ready, we should still update the content
+    const textarea = textareaRef.current;
+
+    if (!isFinal) {
+      // Interim result - show in real-time but don't save
+      interimTranscriptRef.current = transcript;
+
+      // Get the base position where voice started
+      const insertPosition = voiceInsertPositionRef.current;
+      const textBefore = baseContentRef.current.substring(0, insertPosition);
+      const textAfter = baseContentRef.current.substring(insertPosition);
+
+      // Add space if needed
+      const needsSpace = textBefore.length > 0 && !textBefore.endsWith(" ") && !textBefore.endsWith("\n");
+      const displayText = textBefore + (needsSpace ? " " : "") + transcript + textAfter;
+
+      console.log("📝 Interim display:", { displayText, insertPosition, baseContent: baseContentRef.current });
+
+      // Update display (but don't save yet)
+      setContentInput(displayText);
+
+      // Update cursor position to end of interim text (if textarea is available)
+      if (textarea) {
+        const newCursorPosition = insertPosition + transcript.length + (needsSpace ? 1 : 0);
+        setTimeout(() => {
+          textarea.setSelectionRange(newCursorPosition, newCursorPosition);
+        }, 0);
+      }
+    } else {
+      // Final result - commit and save
+
+      // Fallback: If baseContentRef is empty but we have content, use current content
+      // This handles cases where handleVoiceStart might have been missed or race conditions
+      let baseContent = baseContentRef.current;
+      let insertPosition = voiceInsertPositionRef.current;
+
+      if (!baseContent && contentInput) {
+        console.log("Base content was empty, using current content as base");
+        baseContent = contentInput;
+        insertPosition = contentInput.length; // Append to end if we lost track
+      }
+
+      const textBefore = baseContent.substring(0, insertPosition);
+      const textAfter = baseContent.substring(insertPosition);
+
+      // Add space if needed
+      const needsSpace = textBefore.length > 0 && !textBefore.endsWith(" ") && !textBefore.endsWith("\n");
+      const finalText = textBefore + (needsSpace ? " " : "") + transcript.trim() + textAfter;
+
+      console.log(`✅ Applying final transcript: "${transcript}" at pos ${insertPosition}, result: "${finalText}"`);
+
+      // Update the base content for next interim results
+      const newInsertPosition = insertPosition + transcript.trim().length + (needsSpace ? 1 : 0);
+      baseContentRef.current = finalText;
+      voiceInsertPositionRef.current = newInsertPosition;
+
+      // Clear interim transcript
+      interimTranscriptRef.current = "";
+
+      // Update state
+      setContentInput(finalText);
+      cursorPositionRef.current = newInsertPosition;
+
+      // Save to database
+      if (contentTimeoutRef.current) {
+        clearTimeout(contentTimeoutRef.current);
+      }
+
+      contentTimeoutRef.current = setTimeout(() => {
+        onUpdateContent(note._id, finalText);
+      }, 500);
+
+      // Update cursor (if textarea is available)
+      if (textarea) {
+        setTimeout(() => {
+          textarea.focus();
+          textarea.setSelectionRange(newInsertPosition, newInsertPosition);
+        }, 0);
+      }
+    }
+  };
+
+  const handleVoiceError = (error: string) => {
+    setVoiceError(error);
+    setTimeout(() => setVoiceError(null), 5000);
+  };
+
+  const handleVoiceStart = () => {
+    // Initialize voice recording position and base content when recording starts
+    if (textareaRef.current) {
+      const cursorPosition = textareaRef.current.selectionStart;
+      baseContentRef.current = contentInput;
+      voiceInsertPositionRef.current = cursorPosition;
+    }
+  };
+
+  const handleVoiceFromHeader = () => {
+    // Enter edit mode if not already in it
+    if (!isEditMode) {
+      setIsEditMode(true);
+    }
+
+    // Focus textarea and move cursor to end
+    setTimeout(() => {
+      if (textareaRef.current) {
+        textareaRef.current.focus();
+        const length = contentInput.length;
+        textareaRef.current.setSelectionRange(length, length);
+
+        // Initialize voice recording position and base content
+        baseContentRef.current = contentInput;
+        voiceInsertPositionRef.current = length;
+      }
+
+      // Trigger voice recording after a short delay to ensure edit mode is ready
+      setTimeout(() => {
+        voiceInputRef.current?.startRecording();
+      }, 150);
+    }, isEditMode ? 0 : 100);
+  };
+
+  const handleTitleBlur = () => {
+    setIsEditingTitle(false);
+    if (titleInput !== note.title) {
+      onUpdateTitle(note._id, titleInput);
+    }
+  };
+
+  const handleTitleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      titleInputRef.current?.blur();
+    }
+  };
+
+  const handleContentChange = (newContent: string) => {
+    setContentInput(newContent);
+    isTypingRef.current = true;
+
+    if (contentTimeoutRef.current) {
+      clearTimeout(contentTimeoutRef.current);
+    }
+
+    contentTimeoutRef.current = setTimeout(() => {
+      onUpdateContent(note._id, newContent);
+      isTypingRef.current = false;
+    }, 1000);
+  };
+
+  const handleContentBlur = () => {
+    if (isTypingRef.current) {
+      if (contentTimeoutRef.current) {
+        clearTimeout(contentTimeoutRef.current);
+      }
+      onUpdateContent(note._id, contentInput);
+      isTypingRef.current = false;
+    }
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(note.content);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyCodeBlock = async (code: string, index: number) => {
+    await navigator.clipboard.writeText(code);
+    setCopiedBlockIndex(index);
+    setTimeout(() => setCopiedBlockIndex(null), 2000);
+  };
+
+  const handleResizeMouseDown = (e: React.MouseEvent) => {
+    isResizingRef.current = true;
+    const startY = e.clientY;
+    const startHeight = textareaHeight;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingRef.current) {
+        const deltaY = e.clientY - startY;
+        setTextareaHeight(Math.max(100, startHeight + deltaY));
+      }
+    };
+
+    const handleMouseUp = () => {
+      isResizingRef.current = false;
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} className="note-item">
+      {voiceError && (
+        <div className="voice-error-toast" style={{ position: "absolute", top: "-40px", left: "50%", transform: "translateX(-50%)", zIndex: 100 }}>
+          {voiceError}
+        </div>
+      )}
+      <div className="note-header">
+        {/* ... (existing header content) */}
+        <div className="note-left">
+          <div
+            {...attributes}
+            {...listeners}
+            className="drag-handle"
+            style={{ touchAction: "none" }}
+          >
+            ⋮⋮
+          </div>
+          <span
+            className={`collapse-icon ${(note.collapsed ?? false) ? "collapsed" : ""}`}
+            onClick={() =>
+              onToggleCollapse(note._id, !(note.collapsed ?? false))
+            }
+          >
+            ▼
+          </span>
+          {isEditingTitle ? (
+            <input
+              ref={titleInputRef}
+              type="text"
+              className="note-title-input"
+              value={titleInput}
+              onChange={(e) => setTitleInput(e.target.value)}
+              onBlur={handleTitleBlur}
+              onKeyDown={handleTitleKeyDown}
+              autoFocus
+            />
+          ) : (
+            <div className="note-title" onClick={() => setIsEditingTitle(true)}>
+              {note.title || "Untitled"}
+            </div>
+          )}
+        </div>
+        <div className="note-actions">
+          {!(note.collapsed ?? false) && note.content && !isEditMode && (
+            <button
+              className="note-action-button"
+              onClick={handleCopy}
+              title="Copy note"
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </button>
+          )}
+          {!(note.collapsed ?? false) && !isEditMode && note.content && (
+            <button
+              className="note-action-button"
+              onClick={() => setIsEditMode(true)}
+              title="Edit note"
+            >
+              <Edit3 size={14} />
+            </button>
+          )}
+          {!(note.collapsed ?? false) && (
+            <button
+              className="note-action-button"
+              onClick={handleVoiceFromHeader}
+              title="Voice input"
+            >
+              <Mic size={14} />
+            </button>
+          )}
+          <button
+            className="note-action-button"
+            onClick={() => onTogglePin(note._id, !(note.pinnedToTop ?? false))}
+            title={note.pinnedToTop ? "Unpin from top" : "Pin to top"}
+          >
+            {note.pinnedToTop ? (
+              <DrawingPinFilledIcon style={{ width: 14, height: 14 }} />
+            ) : (
+              <DrawingPinIcon style={{ width: 14, height: 14 }} />
+            )}
+          </button>
+          <button
+            className="note-action-button"
+            onClick={() => onDeleteClick(note._id)}
+            title="Delete note"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      </div>
+
+      {!(note.collapsed ?? false) && (
+        <div className="note-content-wrapper">
+          {isEditMode ? (
+            <div className="note-editor-container" style={{ position: 'relative' }}>
+              <div className="voice-input-container" style={{ top: '8px', right: '8px' }}>
+                <VoiceInput
+                  ref={voiceInputRef}
+                  onTranscript={handleVoiceTranscript}
+                  onError={handleVoiceError}
+                  onStartRecording={handleVoiceStart}
+                  geminiApiKey={import.meta.env.VITE_GEMINI_API_KEY || ""}
+                />
+              </div>
+              <div
+                className="note-line-numbers"
+                aria-hidden="true"
+                style={{ height: `${textareaHeight}px` }}
+              >
+                {contentInput.split("\n").map((_, index) => (
+                  <div key={index} className="line-number">
+                    {index + 1}
+                  </div>
+                ))}
+              </div>
+              <textarea
+                ref={textareaRef}
+                className="note-textarea"
+                placeholder="Write your note with markdown support (bold, italic, lists, links). Use ```language for code blocks (css, js, ts, html, json, python, go, rust, etc.)."
+                value={contentInput}
+                onChange={(e) => {
+                  handleContentChange(e.target.value);
+                }}
+                onBlur={handleContentBlur}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") {
+                    e.preventDefault();
+                    setIsEditMode(false);
+                    if (document.activeElement instanceof HTMLElement) {
+                      document.activeElement.blur();
+                    }
+                  }
+                }}
+                spellCheck={true}
+                data-gramm="false"
+                data-gramm_editor="false"
+                data-enable-grammarly="false"
+                style={{ height: `${textareaHeight}px`, paddingRight: '50px' }}
+              />
+              <div
+                className="note-resize-handle"
+                onMouseDown={handleResizeMouseDown}
+                title="Drag to resize"
+              />
+            </div>
+          ) : (
+            <div
+              className="note-display-mode"
+              onClick={() => setIsEditMode(true)}
+            >
+              {parseContentBlocks(contentInput).map((block, index) => (
+                <div key={index} className="note-content-block">
+                  {block.type === "text" ? (
+                    <div className="note-markdown-block">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                        {block.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    <div className="note-code-block-wrapper">
+                      <div className="note-code-block-header">
+                        <span className="note-code-language">
+                          {block.language}
+                        </span>
+                        <button
+                          className="note-code-copy-button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCopyCodeBlock(block.content, index);
+                          }}
+                          title="Copy code"
+                        >
+                          {copiedBlockIndex === index ? (
+                            <Check size={14} />
+                          ) : (
+                            <Copy size={14} />
+                          )}
+                        </button>
+                      </div>
+                      <SyntaxHighlighter
+                        language={block.language}
+                        style={
+                          theme === "dark"
+                            ? cursorDarkTheme
+                            : theme === "light"
+                              ? cursorLightTheme
+                              : theme === "tan"
+                                ? cursorLightTheme
+                                : theme === "cloud"
+                                  ? cursorCloudTheme
+                                  : cursorDarkTheme
+                        }
+                        customStyle={{
+                          margin: 0,
+                          borderRadius: "0 0 4px 4px",
+                          fontSize: "13px",
+                        }}
+                        showLineNumbers={true}
+                        wrapLines={true}
+                      >
+                        {block.content}
+                      </SyntaxHighlighter>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+interface NotesWithAddButtonProps {
+  onAddNote: () => void;
+}
+
+export function NotesSection({
+  date,
+  expandedNoteId,
+  onNoteExpanded,
+  focusNoteId,
+}: NotesSectionProps) {
+  const allNotes = useQuery(api.notes.getNotesByDate, { date }) || [];
+  // Filter to only show unpinned notes in this section
+  const notes = allNotes.filter((note) => !note.pinnedToTop);
+  const updateNote = useMutation(api.notes.updateNote);
+  const deleteNote = useMutation(api.notes.deleteNote);
+  const reorderNotes = useMutation(api.notes.reorderNotes);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    noteId: Id<"notes"> | null;
+    noteTitle: string;
+  }>({ isOpen: false, noteId: null, noteTitle: "" });
+
+  // Expand note when expandedNoteId changes
+  useEffect(() => {
+    if (expandedNoteId) {
+      const note = notes.find((n) => n._id === expandedNoteId);
+      if (note && (note.collapsed ?? false)) {
+        // Expand the note by setting collapsed to false
+        updateNote({ id: expandedNoteId as Id<"notes">, collapsed: false });
+      }
+      // Clear the expanded note ID after handling
+      onNoteExpanded();
+    }
+  }, [expandedNoteId, notes, updateNote, onNoteExpanded]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = notes.findIndex((n) => n._id === active.id);
+      const newIndex = notes.findIndex((n) => n._id === over.id);
+
+      const reorderedNotes = arrayMove(notes, oldIndex, newIndex);
+      reorderNotes({
+        date,
+        noteIds: reorderedNotes.map((n) => n._id),
+      });
+    }
+  };
+
+  const handleUpdateTitle = async (id: Id<"notes">, title: string) => {
+    await updateNote({ id, title });
+  };
+
+  const handleUpdateContent = async (id: Id<"notes">, content: string) => {
+    await updateNote({ id, content });
+  };
+
+  const handleToggleCollapse = async (id: Id<"notes">, collapsed: boolean) => {
+    await updateNote({ id, collapsed });
+  };
+
+  const handleTogglePin = async (id: Id<"notes">, pinned: boolean) => {
+    await updateNote({ id, pinnedToTop: pinned });
+    // Scroll to top when pinning a note (with delay to allow UI to update)
+    if (pinned) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 150);
+    }
+  };
+
+  const handleDeleteClick = (id: Id<"notes">) => {
+    const note = notes.find((n) => n._id === id);
+    setDeleteConfirm({
+      isOpen: true,
+      noteId: id,
+      noteTitle: note?.title || "Untitled",
+    });
+  };
+
+  const confirmDeleteNote = async () => {
+    if (deleteConfirm.noteId) {
+      await deleteNote({ id: deleteConfirm.noteId });
+    }
+    setDeleteConfirm({ isOpen: false, noteId: null, noteTitle: "" });
+  };
+
+  const cancelDeleteNote = () => {
+    setDeleteConfirm({ isOpen: false, noteId: null, noteTitle: "" });
+  };
+
+  if (notes.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="notes-section-multi">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={notes.map((n) => n._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {notes.map((note) => (
+            <NoteItem
+              key={note._id}
+              note={note}
+              onUpdateTitle={handleUpdateTitle}
+              onUpdateContent={handleUpdateContent}
+              onToggleCollapse={handleToggleCollapse}
+              onDeleteClick={handleDeleteClick}
+              onTogglePin={handleTogglePin}
+              shouldFocus={focusNoteId === note._id}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Note"
+        message={`Are you sure you want to delete "${deleteConfirm.noteTitle}"? This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteNote}
+        onCancel={cancelDeleteNote}
+        isDangerous={true}
+      />
+    </div>
+  );
+}
+
+export function AddNoteButton({ onAddNote }: NotesWithAddButtonProps) {
+  return (
+    <button className="add-note-button" onClick={onAddNote}>
+      <Plus size={14} />
+      <span>Add Note</span>
+    </button>
+  );
+}
+
+// Pinned Notes Section - renders at top of page
+interface PinnedNotesSectionProps {
+  date: string;
+  expandedNoteId: string | null;
+  onNoteExpanded: () => void;
+  focusNoteId?: Id<"notes"> | null;
+}
+
+export function PinnedNotesSection({
+  date,
+  expandedNoteId,
+  onNoteExpanded,
+  focusNoteId,
+}: PinnedNotesSectionProps) {
+  const allNotes = useQuery(api.notes.getNotesByDate, { date }) || [];
+  // Filter to only show pinned notes
+  const notes = allNotes.filter((note) => note.pinnedToTop);
+  const updateNote = useMutation(api.notes.updateNote);
+  const deleteNote = useMutation(api.notes.deleteNote);
+  const reorderNotes = useMutation(api.notes.reorderNotes);
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    isOpen: boolean;
+    noteId: Id<"notes"> | null;
+    noteTitle: string;
+  }>({ isOpen: false, noteId: null, noteTitle: "" });
+
+  // Expand note when expandedNoteId changes
+  useEffect(() => {
+    if (expandedNoteId) {
+      const note = notes.find((n) => n._id === expandedNoteId);
+      if (note && (note.collapsed ?? false)) {
+        updateNote({ id: expandedNoteId as Id<"notes">, collapsed: false });
+      }
+      onNoteExpanded();
+    }
+  }, [expandedNoteId, notes, updateNote, onNoteExpanded]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(TouchSensor, {
+      activationConstraint: {
+        delay: 200,
+        tolerance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = notes.findIndex((n) => n._id === active.id);
+      const newIndex = notes.findIndex((n) => n._id === over.id);
+
+      const reorderedNotes = arrayMove(notes, oldIndex, newIndex);
+      reorderNotes({
+        date,
+        noteIds: reorderedNotes.map((n) => n._id),
+      });
+    }
+  };
+
+  const handleUpdateTitle = async (id: Id<"notes">, title: string) => {
+    await updateNote({ id, title });
+  };
+
+  const handleUpdateContent = async (id: Id<"notes">, content: string) => {
+    await updateNote({ id, content });
+  };
+
+  const handleToggleCollapse = async (id: Id<"notes">, collapsed: boolean) => {
+    await updateNote({ id, collapsed });
+  };
+
+  const handleTogglePin = async (id: Id<"notes">, pinned: boolean) => {
+    await updateNote({ id, pinnedToTop: pinned });
+    // Scroll to top when pinning a note (with delay to allow UI to update)
+    if (pinned) {
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 150);
+    }
+  };
+
+  const handleDeleteClick = (id: Id<"notes">) => {
+    const note = notes.find((n) => n._id === id);
+    setDeleteConfirm({
+      isOpen: true,
+      noteId: id,
+      noteTitle: note?.title || "Untitled",
+    });
+  };
+
+  const confirmDeleteNote = async () => {
+    if (deleteConfirm.noteId) {
+      await deleteNote({ id: deleteConfirm.noteId });
+    }
+    setDeleteConfirm({ isOpen: false, noteId: null, noteTitle: "" });
+  };
+
+  const cancelDeleteNote = () => {
+    setDeleteConfirm({ isOpen: false, noteId: null, noteTitle: "" });
+  };
+
+  if (notes.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="pinned-notes-section">
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={notes.map((n) => n._id)}
+          strategy={verticalListSortingStrategy}
+        >
+          {notes.map((note) => (
+            <NoteItem
+              key={note._id}
+              note={note}
+              onUpdateTitle={handleUpdateTitle}
+              onUpdateContent={handleUpdateContent}
+              onToggleCollapse={handleToggleCollapse}
+              onDeleteClick={handleDeleteClick}
+              onTogglePin={handleTogglePin}
+              shouldFocus={focusNoteId === note._id}
+            />
+          ))}
+        </SortableContext>
+      </DndContext>
+
+      <ConfirmDialog
+        isOpen={deleteConfirm.isOpen}
+        title="Delete Note"
+        message={`Are you sure you want to delete "${deleteConfirm.noteTitle}"? This cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        onConfirm={confirmDeleteNote}
+        onCancel={cancelDeleteNote}
+        isDangerous={true}
+      />
+    </div>
+  );
+}

@@ -1,0 +1,19 @@
+
+
+# Deployment used by `npx convex dev`
+CONVEX_DEPLOYMEssNT=dev:stoic-lark-944 # team: mauseoluwasegun, project: slent
+
+VITE_CONVEX_URL=https://stoic-lark-944.convex.cloud
+VITE_CLERK_PUBLISHABLE_KEY=pk_test_c3RpcnJpbmctamFndWFyLTkuY2xlcmsuYWNjb3VudHMuZGV2JA
+CLERK_SECRET_KEY=https://api.clerk.com
+VITE_CLERK_FRONTEND_API_URL=https://stirring-jaguar-9.clerk.accounts.dev
+VITE_WORKOS_REDIRElCT_URI=http://localhost:5173/callback
+# VITE_WORKOS_REDIRECT_URI=http://localhost:5173/callback
+VITE_WORKOS_CLIENT_ID=client_01K91VJA86AGZ80ZK1F04KB2B7
+VITE_CLERK_SIGN_IN_FORCE_REDIRECT_URL=/dashbaord
+VITE_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/dashbaord
+VITE_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashbaord
+VITE_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL=/dashbaord
+
+# Deployment used by `npx convex dev`ll
+CONVEX_DEPLOYMENT=dev:stoic-lark-944 # team: mauseoluwasegun, project: slent
