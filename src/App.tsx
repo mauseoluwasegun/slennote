@@ -1,7 +1,7 @@
- import React, { useState, useEffect, useRef } from "react";
- import { Routes, Route } from "react-router-dom";
- import { useQuery, useMutation, useConvexAuth } from "convex/react";
- import { useUser, SignIn, SignUp, UserProfile, SignOutButton } from "@clerk/clerk-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Routes, Route } from "react-router-dom";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
+import { useUser, SignIn, SignUp, UserProfile, SignOutButton } from "@clerk/clerk-react";
 import { api } from "../convex/_generated/api";
 import { Sidebar } from "./components/Sidebar";
 import { TodoList, TodoListRef } from "./components/TodoList";
@@ -1327,23 +1327,51 @@ function App() {
             onClick={() => setShowSignInModal(false)}
           >
             <div
-              className="clerk-modal-container"
+              className="clerk-modal-container clerk-modal-split clerk-modal-split-reverse"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button
-                className="clerk-close-button"
-                onClick={() => setShowSignInModal(false)}
-                title="Close sign in"
-              >
-                <X size={20} />
-              </button>
+              {/* Left Panel - Sign In Form */}
+              <div className="clerk-modal-form-panel">
+                {/* Close Button */}
+                <button
+                  className="clerk-close-button"
+                  onClick={() => setShowSignInModal(false)}
+                  title="Close sign in"
+                >
+                  <X size={20} />
+                </button>
 
-              <SignIn
-                appearance={clerkAppearance}
-                afterSignInUrl="/"
-                routing="hash"
-              />
+                <SignIn
+                  appearance={clerkAppearance}
+                  afterSignInUrl="/"
+                  routing="hash"
+                />
+              </div>
+
+              {/* Right Panel - Promotional Branding */}
+              <div className="clerk-modal-image-panel">
+                <div className="clerk-modal-image-overlay">
+                  <Logo size="large" />
+                  <h2 className="clerk-modal-headline">Welcome back!</h2>
+                  <p className="clerk-modal-subheadline">
+                    Sign in to access your todos and notes
+                  </p>
+                  <div className="clerk-modal-features">
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Real-time sync across devices</span>
+                    </div>
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Voice notes & transcription</span>
+                    </div>
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Focus mode with ambient sounds</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -1355,24 +1383,52 @@ function App() {
             onClick={() => setShowSignUpModal(false)}
           >
             <div
-              className="clerk-modal-container"
+              className="clerk-modal-container clerk-modal-split"
               onClick={(e) => e.stopPropagation()}
             >
-              {/* Close Button */}
-              <button
-                className="clerk-close-button"
-                onClick={() => setShowSignUpModal(false)}
-                title="Close sign up"
-              >
-                <X size={20} />
-              </button>
+              {/* Left Panel - Promotional Branding */}
+              <div className="clerk-modal-image-panel">
+                <div className="clerk-modal-image-overlay">
+                  <Logo size="large" />
+                  <h2 className="clerk-modal-headline">Stay organized, stay productive</h2>
+                  <p className="clerk-modal-subheadline">
+                    Join thousands of users managing their tasks with SlentNote
+                  </p>
+                  <div className="clerk-modal-features">
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Real-time sync across devices</span>
+                    </div>
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Voice notes & transcription</span>
+                    </div>
+                    <div className="clerk-modal-feature">
+                      <span className="clerk-modal-feature-icon">✓</span>
+                      <span>Focus mode with ambient sounds</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
-              <SignUp
-                appearance={clerkAppearance}
-                afterSignInUrl="/"
-                afterSignUpUrl="/"
-                routing="hash"
-              />
+              {/* Right Panel - Sign Up Form */}
+              <div className="clerk-modal-form-panel">
+                {/* Close Button */}
+                <button
+                  className="clerk-close-button"
+                  onClick={() => setShowSignUpModal(false)}
+                  title="Close sign up"
+                >
+                  <X size={20} />
+                </button>
+
+                <SignUp
+                  appearance={clerkAppearance}
+                  afterSignInUrl="/"
+                  afterSignUpUrl="/"
+                  routing="hash"
+                />
+              </div>
             </div>
           </div>
         )}
