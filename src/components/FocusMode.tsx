@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, Play, Pause, RotateCcw, Volume2, VolumeX } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import { TextLogo } from "./Logo";
@@ -17,39 +17,39 @@ type AmbientSound = {
 
 // Using web-based audio sources and Web Audio API for generated sounds
 const AMBIENT_SOUNDS: AmbientSound[] = [
-  { 
-    name: "Rain", 
-    url: "https://www.soundjay.com/misc/sounds/rain-01.wav", 
+  {
+    name: "Rain",
+    url: "https://www.soundjay.com/misc/sounds/rain-01.wav",
     icon: "🌧️",
     type: 'web'
   },
-  { 
-    name: "Forest", 
-    url: "https://www.soundjay.com/nature/sounds/forest-01.wav", 
+  {
+    name: "Forest",
+    url: "https://www.soundjay.com/nature/sounds/forest-01.wav",
     icon: "🌲",
     type: 'web'
   },
-  { 
-    name: "Ocean", 
-    url: "https://www.soundjay.com/nature/sounds/ocean-01.wav", 
+  {
+    name: "Ocean",
+    url: "https://www.soundjay.com/nature/sounds/ocean-01.wav",
     icon: "🌊",
     type: 'web'
   },
-  { 
-    name: "Brown Noise", 
-    url: "brown-noise", 
+  {
+    name: "Brown Noise",
+    url: "brown-noise",
     icon: "🤎",
     type: 'generated'
   },
-  { 
-    name: "White Noise", 
-    url: "white-noise", 
+  {
+    name: "White Noise",
+    url: "white-noise",
     icon: "📻",
     type: 'generated'
   },
-  { 
-    name: "Pink Noise", 
-    url: "pink-noise", 
+  {
+    name: "Pink Noise",
+    url: "pink-noise",
     icon: "🌸",
     type: 'generated'
   },
@@ -66,7 +66,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
   const [selectedSound, setSelectedSound] = useState<string | null>(null);
   const [soundVolume, setSoundVolume] = useState(0.3);
   const [isMuted, setIsMuted] = useState(false);
-  
+
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const noiseNodeRef = useRef<AudioBufferSourceNode | null>(null);
@@ -82,7 +82,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
             // Timer finished
             setIsRunning(false);
             playNotificationSound();
-            
+
             if (isBreak) {
               // Break finished, start new study session
               setIsBreak(false);
@@ -122,7 +122,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
       stopGeneratedNoise();
 
       const selectedSoundData = AMBIENT_SOUNDS.find(sound => sound.url === selectedSound);
-      
+
       if (selectedSoundData?.type === 'generated') {
         // Handle generated noise
         const noiseType = selectedSound.replace('-noise', '') as 'white' | 'pink' | 'brown';
@@ -133,7 +133,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
         audioRef.current.loop = true;
         audioRef.current.volume = soundVolume;
         audioRef.current.crossOrigin = "anonymous";
-        
+
         audioRef.current.play().catch((error) => {
           console.warn("Failed to play web audio, falling back to generated sound:", error);
           // Fallback to white noise if web audio fails
@@ -237,7 +237,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
 
     const audioContext = audioContextRef.current;
     const buffer = generateNoise(type);
-    
+
     noiseNodeRef.current = audioContext.createBufferSource();
     noiseNodeRef.current.buffer = buffer;
     noiseNodeRef.current.loop = true;
@@ -247,7 +247,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
       gainNodeRef.current = audioContext.createGain();
       gainNodeRef.current.connect(audioContext.destination);
     }
-    
+
     gainNodeRef.current.gain.value = soundVolume;
     noiseNodeRef.current.connect(gainNodeRef.current);
     noiseNodeRef.current.start();
@@ -309,12 +309,12 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
     if (!audioContextRef.current) {
       audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    
+
     // Resume audio context if suspended (required by some browsers)
     if (audioContextRef.current.state === 'suspended') {
       audioContextRef.current.resume();
     }
-    
+
     setSelectedSound(selectedSound === soundUrl ? null : soundUrl);
   };
 
@@ -327,7 +327,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
         <div className="focus-mode-logo">
           <TextLogo />
         </div>
-        
+
         {/* Header */}
         <div className="focus-mode-header">
           <h2 className="focus-mode-title">
@@ -478,7 +478,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
             <li>Review material before starting each session</li>
           </ul>
           <div style={{ marginTop: '16px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-            <strong>Sound Info:</strong> Generated sounds (Brown/White/Pink Noise) work offline. 
+            <strong>Sound Info:</strong> Generated sounds (Brown/White/Pink Noise) work offline.
             Web sounds may require internet connection.
           </div>
         </div>

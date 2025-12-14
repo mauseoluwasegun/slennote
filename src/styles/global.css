@@ -1,15 +1,20 @@
 /* CSS Variables for theming */
 :root[data-theme="dark"] {
   /* Background */
-  --bg-primary: #1E1E1E;    /* Very Dark Gray - Avoids pure black for reduced eye fatigue */
-  --bg-secondary: #2C2C2C;  /* Card / Surface - For UI structure and depth */
+  --bg-primary: #1E1E1E;
+  /* Very Dark Gray - Avoids pure black for reduced eye fatigue */
+  --bg-secondary: #2C2C2C;
+  /* Card / Surface - For UI structure and depth */
 
   /* Elevation / hover */
-  --bg-hover: #272727;      /* Slightly lighter than primary for hover states */
+  --bg-hover: #272727;
+  /* Slightly lighter than primary for hover states */
 
   /* Text */
-  --text-primary: #EBEBEB;  /* Off-White - Reduces halation effect */
-  --text-secondary: #999999; /* Medium Gray - For timestamps and subtle details */
+  --text-primary: #EBEBEB;
+  /* Off-White - Reduces halation effect */
+  --text-secondary: #999999;
+  /* Medium Gray - For timestamps and subtle details */
 
   /* Borders & accents */
   --border-color: #333333;
@@ -29,18 +34,24 @@
 
 :root[data-theme="light"] {
   /* Background */
-  --bg-primary: #F7F7F7;    /* Very Light Gray / Off-White - Reduces eye strain */
-  --bg-secondary: #FFFFFF;  /* Card / Surface - Clean contrast for content areas */
+  --bg-primary: #F7F7F7;
+  /* Very Light Gray / Off-White - Reduces eye strain */
+  --bg-secondary: #FFFFFF;
+  /* Card / Surface - Clean contrast for content areas */
 
   /* Elevation / hover */
-  --bg-hover: #EFEFEF;     /* Subtle hover state */
+  --bg-hover: #EFEFEF;
+  /* Subtle hover state */
 
   /* Text */
-  --text-primary: #1A1A1A;  /* Near Black - Maximum contrast for readability */
-  --text-secondary: #666666; /* Medium Gray - For subtle details and metadata */
+  --text-primary: #1A1A1A;
+  /* Near Black - Maximum contrast for readability */
+  --text-secondary: #666666;
+  /* Medium Gray - For subtle details and metadata */
 
   /* Borders & accents */
-  --border-color: #E0E0E0;  /* Light Gray - Subtle dividers */
+  --border-color: #E0E0E0;
+  /* Light Gray - Subtle dividers */
   --accent: #007aff;
   --checkbox-bg: #fafafa;
   --archive-bg: #fafafa;
@@ -111,6 +122,140 @@
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
+}
+
+/* Split-pane modal layout for SignUp */
+.clerk-modal-split {
+  flex-direction: row;
+  max-width: 900px;
+  max-height: 85vh;
+  overflow: hidden;
+}
+
+/* Reverse layout for SignIn (form left, branding right) */
+.clerk-modal-split-reverse {
+  flex-direction: row;
+}
+
+.clerk-modal-split-reverse .clerk-modal-form-panel {
+  order: 1;
+}
+
+.clerk-modal-split-reverse .clerk-modal-image-panel {
+  order: 2;
+  border-radius: 0 8px 8px 0;
+}
+
+/* Left panel - promotional branding */
+.clerk-modal-image-panel {
+  flex: 0 0 45%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Dark mode gradient */
+:root[data-theme="dark"] .clerk-modal-image-panel {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+}
+
+/* Tan mode gradient */
+:root[data-theme="tan"] .clerk-modal-image-panel {
+  background: linear-gradient(135deg, #8b7355 0%, #a0826d 50%, #d4a574 100%);
+}
+
+/* Cloud mode gradient */
+:root[data-theme="cloud"] .clerk-modal-image-panel {
+  background: linear-gradient(135deg, #171717 0%, #2d2d2d 50%, #404040 100%);
+}
+
+/* Overlay content */
+.clerk-modal-image-overlay {
+  text-align: center;
+  color: white;
+  z-index: 1;
+}
+
+.clerk-modal-image-overlay .logo {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 24px;
+}
+
+.clerk-modal-headline {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  line-height: 1.3;
+  color: white;
+}
+
+.clerk-modal-subheadline {
+  font-size: 14px;
+  opacity: 0.9;
+  margin-bottom: 32px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.clerk-modal-features {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.clerk-modal-feature {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.clerk-modal-feature-icon {
+  width: 20px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* Right panel - form */
+.clerk-modal-form-panel {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 24px;
+  background: var(--bg-primary);
+}
+
+/* Mobile responsive - hide image panel */
+@media (max-width: 768px) {
+  .clerk-modal-split {
+    flex-direction: column;
+    max-width: 95vw;
+  }
+
+  .clerk-modal-image-panel {
+    display: none;
+  }
+
+  .clerk-modal-form-panel {
+    flex: 1;
+    padding: 16px;
+  }
 }
 
 /* Clerk UserProfile Theme Overrides - use site variables */
@@ -494,6 +639,7 @@
   border: 0px solid var(--border-color) !important;
   border-radius: 6px !important;
 }
+
 .cl-button:hover {
   background-color: var(--bg-hover) !important;
 }
@@ -556,9 +702,11 @@
   border: 1px solid var(--border-color) !important;
   border-radius: 8px !important;
 }
+
 :root .cl-navbarItem:hover {
   background-color: var(--bg-hover) !important;
 }
+
 :root .cl-navbarItem__active {
   background-color: var(--bg-hover) !important;
   color: var(--text-primary) !important;
@@ -576,10 +724,11 @@
   }
 
   /* Ensure UserProfile content is scrollable on mobile */
-  .clerk-modal-container > div {
+  .clerk-modal-container>div {
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 80px; /* Space for signout button */
+    padding-bottom: 80px;
+    /* Space for signout button */
   }
 }
 
@@ -669,6 +818,7 @@
 
 /* Mobile-specific Clerk UserProfile fixes */
 @media (max-width: 768px) {
+
   /* Ensure Clerk components are properly sized on mobile */
   .clerk-modal-container .cl-card {
     border-radius: 0 !important;
@@ -687,7 +837,8 @@
   }
 
   .clerk-modal-container .cl-formFieldInput {
-    font-size: 16px !important; /* Prevents zoom on iOS */
+    font-size: 16px !important;
+    /* Prevents zoom on iOS */
     padding: 12px !important;
   }
 
@@ -696,7 +847,8 @@
   .clerk-modal-container .cl-formButtonSecondary {
     padding: 12px 16px !important;
     font-size: 16px !important;
-    min-height: 44px !important; /* iOS touch target */
+    min-height: 44px !important;
+    /* iOS touch target */
   }
 
   /* Fix navigation tabs */
@@ -1053,6 +1205,7 @@ button:active,
 :root[data-theme="cloud"] .date-item-collapsed.active {
   background-color: #171717;
 }
+
 .date-item-container {
   display: flex;
   flex-direction: column;
@@ -1196,7 +1349,7 @@ button:active,
 }
 
 /* Show three dots on folder/month group headers on hover */
-.sidebar-archive-section:hover > .date-menu .date-menu-button {
+.sidebar-archive-section:hover>.date-menu .date-menu-button {
   opacity: 1;
 }
 
@@ -1229,6 +1382,7 @@ button:active,
 :root[data-theme="tan"] .date-menu-button:hover {
   background-color: rgba(139, 115, 85, 0.1);
 }
+
 :root[data-theme="cloud"] .date-menu-button:hover {
   background-color: #171717;
 }
@@ -1301,33 +1455,40 @@ button:active,
   background-color: #eb5601;
   color: #fff;
 }
+
 /* light mode date picker button */
 :root[data-theme="light"] .date-picker-button {
   background-color: #0076c6;
   color: #fff;
 }
+
 /* cloud mode date picker button */
 :root[data-theme="cloud"] .date-picker-button {
   background-color: #171717;
   color: #fff;
 }
+
 /* date-picker-button cancel */
 :root[data-theme="light"] .date-picker-button.cancel {
   background-color: #0076c6;
   color: #fff;
 }
+
 :root[data-theme="tan"] .date-picker-button.cancel {
   background-color: #eb5601;
   color: #fff;
 }
+
 :root[data-theme="cloud"] .date-picker-button.cancel {
   background-color: #171717;
   color: #fff;
 }
+
 :root[data-theme="dark"] .date-picker-button.cancel {
   background-color: #27a561;
   color: #fff;
 }
+
 /* dark mode date picker button */
 :root[data-theme="dark"] .date-picker-button {
   background-color: #27a561;
@@ -1359,20 +1520,21 @@ button:active,
 }
 
 /* Container for archive/folder header and menu button */
-.sidebar-archive-section > .sidebar-archive-header,
-.sidebar-archive-section > .date-menu {
+.sidebar-archive-section>.sidebar-archive-header,
+.sidebar-archive-section>.date-menu {
   display: inline-block;
 }
 
-.sidebar-archive-section > .sidebar-archive-header {
+.sidebar-archive-section>.sidebar-archive-header {
   width: calc(100% - 00px);
 }
 
-.sidebar-archive-section > .date-menu {
+.sidebar-archive-section>.date-menu {
   position: absolute;
   right: 6px;
   top: 0;
-  height: 40px; /* Match the height of sidebar-archive-header (content + 8px top + 8px bottom padding) */
+  height: 40px;
+  /* Match the height of sidebar-archive-header (content + 8px top + 8px bottom padding) */
   display: flex;
   align-items: center;
 }
@@ -1840,6 +2002,7 @@ button:active,
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -1903,12 +2066,15 @@ button:active,
   flex: 1;
   overflow-y: auto;
   padding: 5px;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .todo-container::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 /* Notes section */
@@ -2050,11 +2216,9 @@ button:active,
   width: 16px;
   height: 16px;
   cursor: nwse-resize;
-  background: linear-gradient(
-    135deg,
-    transparent 50%,
-    var(--text-secondary) 50%
-  );
+  background: linear-gradient(135deg,
+      transparent 50%,
+      var(--text-secondary) 50%);
   opacity: 0.4;
   transition: opacity 0.2s ease;
   border-bottom-right-radius: 4px;
@@ -2317,11 +2481,11 @@ button:active,
   padding: 0;
 }
 
-.note-markdown-block > *:first-child {
+.note-markdown-block>*:first-child {
   margin-top: 0;
 }
 
-.note-markdown-block > *:last-child {
+.note-markdown-block>*:last-child {
   margin-bottom: 0;
 }
 
@@ -3237,6 +3401,7 @@ button:active,
   background-color: #171717;
   color: rgba(255, 255, 255, 0.95);
 }
+
 .menu-dropdown {
   position: absolute;
   right: 0;
@@ -4505,6 +4670,7 @@ button:active,
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -4999,6 +5165,7 @@ button:active,
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -5043,8 +5210,7 @@ button:active,
   border: 1px solid rgba(255, 255, 255, 0.25);
 }
 
-.pomodoro-fullscreen-content.with-glass-effect
-  .pomodoro-control-button-large:hover {
+.pomodoro-fullscreen-content.with-glass-effect .pomodoro-control-button-large:hover {
   background: rgba(255, 255, 255, 0.25);
 }
 
@@ -5061,6 +5227,7 @@ button:active,
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -5085,10 +5252,12 @@ button:active,
 }
 
 @keyframes pulse {
+
   0%,
   100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.8;
   }
@@ -5266,6 +5435,7 @@ button:active,
 
 /* iOS Standalone Mode (PWA) Styles */
 @media all and (display-mode: standalone) {
+
   /* Fix for iOS standalone mode viewport */
   html {
     height: -webkit-fill-available;
@@ -5288,6 +5458,7 @@ button:active,
 
 /* iOS specific fixes for home screen app */
 @supports (-webkit-touch-callout: none) {
+
   /* Ensure proper height calculation on iOS */
   html {
     height: -webkit-fill-available;
@@ -5791,12 +5962,15 @@ button:active,
   background-color: var(--bg-primary);
   padding: 0 15px;
   overflow-x: auto;
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE and Edge */
 }
 
 .fullpage-note-tabs::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
+  /* Chrome, Safari, Opera */
 }
 
 .fullpage-note-tabs-container {
@@ -6036,6 +6210,7 @@ button:active,
 .notes-folder-header:active {
   color: #ffffff;
 }
+
 .notes-folder-header:hover {
   color: var(--text-primary);
 }
@@ -6063,6 +6238,7 @@ button:active,
 .notes-folder-title:active {
   color: #ffffff;
 }
+
 .notes-folder-title:hover {
   color: var(--text-primary);
 }
@@ -6112,10 +6288,12 @@ button:active,
 .notes-folder-item.active {
   background-color: rgba(0, 0, 0, 0.2);
 }
+
 /* Active state for selected full-page note */
 :root[data-theme="cloud"] .notes-folder-item.active {
   background-color: #414141;
 }
+
 .notes-folder-item-title {
   flex: 1;
   overflow: hidden;
@@ -6885,24 +7063,24 @@ button:active,
     padding: 24px;
     margin: 10px;
   }
-  
+
   .timer-circle {
     width: 160px;
     height: 160px;
   }
-  
+
   .timer-time {
     font-size: 28px;
   }
-  
+
   .focus-settings {
     grid-template-columns: 1fr;
   }
-  
+
   .sound-options {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .focus-stats {
     grid-template-columns: 1fr;
   }
@@ -6924,7 +7102,9 @@ button:active,
 .app-container.focus-mode-active .main-content {
   margin-left: 0;
   padding: 40px 20px;
-}/* Logo 
+}
+
+/* Logo 
 Styles */
 .logo {
   transition: all 0.2s ease;
@@ -6959,7 +7139,7 @@ Styles */
   .text-logo-text {
     font-size: 16px;
   }
-  
+
   .text-logo {
     gap: 8px;
   }
@@ -6967,9 +7147,10 @@ Styles */
 
 @media (max-width: 480px) {
   .text-logo-text {
-    display: none; /* Hide text on very small screens, show only logo */
+    display: none;
+    /* Hide text on very small screens, show only logo */
   }
-  
+
   .text-logo {
     gap: 0;
   }
@@ -7008,6 +7189,7 @@ Styles */
     opacity: 0;
     transform: translateY(-10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -7110,6 +7292,7 @@ Styles */
   from {
     transform: rotate(0deg);
   }
+
   to {
     transform: rotate(360deg);
   }
@@ -7130,10 +7313,12 @@ Styles */
     transform: scale(1);
     opacity: 0.7;
   }
+
   50% {
     transform: scale(1.15);
     opacity: 0;
   }
+
   100% {
     transform: scale(1);
     opacity: 0;
@@ -7160,6 +7345,7 @@ Styles */
     opacity: 0;
     transform: translateX(-50%) translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
