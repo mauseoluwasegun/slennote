@@ -201,7 +201,11 @@ export function PomodoroTimer() {
     hasPlayedStartSound.current = false;
     hasPlayedCountdownSound.current = false;
     hasCalledComplete.current = false;
-    await startPomodoro();
+    await startPomodoro({
+      totalCycles: 1,
+      phaseDuration: 25 * 60 * 1000,
+      breakDuration: 5 * 60 * 1000,
+    });
   };
 
   const handlePause = async () => {
@@ -235,7 +239,11 @@ export function PomodoroTimer() {
     hasPlayedStartSound.current = false;
     hasPlayedCountdownSound.current = false;
     hasCalledComplete.current = false;
-    await startPomodoro();
+    await startPomodoro({
+      totalCycles: 1,
+      phaseDuration: 25 * 60 * 1000,
+      breakDuration: 5 * 60 * 1000,
+    });
   };
 
   const handleCloseFullScreen = async () => {
@@ -264,7 +272,7 @@ export function PomodoroTimer() {
   const handleToggleMute = () => {
     const newMutedState = !isMuted;
     setIsMuted(newMutedState);
-    
+
     // Stop all currently playing audio when muting
     if (newMutedState) {
       activeAudioRef.current.forEach((audio) => {

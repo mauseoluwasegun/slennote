@@ -16,20 +16,20 @@ export function KeyboardShortcutsModal({
 }: KeyboardShortcutsModalProps) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
   const { isAuthenticated } = useConvexAuth();
-  
+
   // Fetch user preferences
   const userPreferences = useQuery(
     api.users.getUserPreferences,
     isAuthenticated ? undefined : "skip",
   );
-  
+
   // Mutation to update font size
   const setTodoFontSize = useMutation(api.users.setTodoFontSize);
-  
+
   // Font size options
   const fontSizes = [10, 12, 14, 16, 18, 24];
   const currentFontSize = userPreferences?.todoFontSize ?? 12;
-  
+
   const handleFontSizeChange = async (fontSize: number) => {
     if (isAuthenticated) {
       await setTodoFontSize({ fontSize });
@@ -64,10 +64,12 @@ export function KeyboardShortcutsModal({
     {
       category: "Navigation",
       items: [
+        { key: "t", description: "Jump to today" },
+        { key: "Shift + T", description: "Toggle theme" },
+        { key: "Shift + S", description: "Toggle streaks header" },
         { key: "↑/↓", description: "Navigate between todos" },
         { key: "⌘ + ↑", description: "Scroll to top" },
         { key: "⌘ + ↓", description: "Scroll to bottom" },
-        { key: "f", description: "Open Focus Mode for studying" },
         { key: "?", description: "Show keyboard shortcuts" },
         { key: "Esc", description: "Close modals" },
       ],
@@ -76,8 +78,10 @@ export function KeyboardShortcutsModal({
       category: "Todo Management",
       items: [
         { key: "/ or c", description: "Focus todo input" },
-        { key: "Tab", description: "Focus first todo from input" },
-        { key: "Space or e", description: "Mark focused todo as done" },
+        { key: "Tab", description: "Focus first todo from input or navigate to next todo" },
+        { key: "Shift + Tab", description: "Navigate to previous todo" },
+        { key: "Space or d", description: "Mark focused todo as done" },
+        { key: "#", description: "Delete focused todo" },
         { key: "p", description: "Pin/unpin hovered todo" },
         { key: "s", description: "Add subtask to focused todo" },
         { key: "m", description: "Open menu for focused todo" },
@@ -89,17 +93,36 @@ export function KeyboardShortcutsModal({
       items: [{ key: "Shift + +", description: "Add new note" }],
     },
     {
+      category: "Full-Page Notes",
+      items: [
+        { key: "Shift + N", description: "Open full-page notes for current date" },
+        { key: "e", description: "Enter edit mode" },
+        { key: "p", description: "Enter preview mode" },
+        { key: "Esc", description: "Exit edit mode (show preview)" },
+      ],
+    },
+    {
       category: "Search",
       items: [{ key: "⌘ + K", description: "Open search modal" }],
     },
     {
       category: "Pomodoro Timer",
       items: [
+        { key: "Shift + F", description: "Open Pomodoro timer" },
         {
           key: "f",
           description: "Enter full screen (when timer modal is open)",
         },
         { key: "Esc", description: "Exit full screen / Close timer modal" },
+      ],
+    },
+    {
+      category: "AI Chat",
+      items: [
+        { key: "/", description: "Focus chat input" },
+        { key: "Enter", description: "Send message" },
+        { key: "Shift + Enter", description: "New line" },
+        { key: '"clear"', description: "Clear chat history (type in quotes)" },
       ],
     },
   ];

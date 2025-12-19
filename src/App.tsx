@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { useUser, SignIn, SignUp, UserProfile, SignOutButton } from "@clerk/clerk-react";
 import { api } from "../convex/_generated/api";
@@ -14,12 +14,13 @@ import { FocusMode } from "./components/FocusMode";
 import { Logo } from "./components/Logo";
 import { FullPageNoteView } from "./components/FullPageNoteView";
 import { FullPageNoteTabs } from "./components/FullPageNoteTabs";
+import { AIChat } from "./components/AIChat";
 import { Launch } from "./pages/Launch";
 import { Changelog } from "./pages/Changelog";
 import { NotFound } from "./pages/NotFound";
 import { Stats } from "./pages/Stats";
 import { format } from "date-fns";
-import { Search, Menu, X } from "lucide-react";
+import { Search, Menu, X, Sparkles } from "lucide-react";
 import {
   CopyIcon,
   CheckIcon,
@@ -32,6 +33,7 @@ import { triggerSelectionHaptic, triggerSuccessHaptic } from "./lib/haptics";
 import "./styles/global.css";
 
 function App() {
+  const navigate = useNavigate();
   const { isLoading: authIsLoading, isAuthenticated } = useConvexAuth();
   const { user } = useUser();
   const { theme } = useTheme();
@@ -253,6 +255,18 @@ function App() {
       void user?.reload?.();
     }
   }, [showSignInModal, user]);
+
+  // Close auth modals when authenticated
+  useEffect(() => {
+    if (isAuthenticated) {
+      setShowSignInModal(false);
+      setShowSignUpModal(false);
+      setShowSignInToSearchModal(false);
+      setShowSignInToCreateModal(false);
+      setShowSignInToNoteModal(false);
+      setShowSignInToMenuModal(false);
+    }
+  }, [isAuthenticated]);
 
   // Handle sidebar resize
   useEffect(() => {
@@ -907,6 +921,16 @@ function App() {
                 className="search-button"
                 onClick={() => {
                   triggerSelectionHaptic();
+                  navigate("/chat");
+                }}
+                title="AI Chat"
+              >
+                <Sparkles size={18} className="ai-icon-sparkle" />
+              </button>
+              <button
+                className="search-button"
+                onClick={() => {
+                  triggerSelectionHaptic();
                   if (!authIsLoading && isAuthenticated) {
                     setSearchModalOpen(true);
                   } else {
@@ -1202,11 +1226,11 @@ function App() {
             // If a full-page note was selected, open it
             if (fullPageNoteId) {
               setOpenFullPageNoteTabs((prev) =>
-                prev.includes(fullPageNoteId)
+                prev.includes(fullPageNoteId as Id<"fullPageNotes">)
                   ? prev
-                  : [...prev, fullPageNoteId],
+                  : [...prev, fullPageNoteId as Id<"fullPageNotes">],
               );
-              setSelectedFullPageNoteId(fullPageNoteId);
+              setSelectedFullPageNoteId(fullPageNoteId as Id<"fullPageNotes">);
               setShowFullPageNotes(true);
             }
             // If a regular note was selected, set it to be expanded
@@ -1551,6 +1575,7 @@ function AppRouter() {
       <Route path="/about" element={<Launch />} />
       <Route path="/changelog" element={<Changelog />} />
       <Route path="/stats" element={<Stats />} />
+      <Route path="/chat" element={<AIChat />} />
       <Route path="/" element={<App />} />
       <Route path="*" element={<NotFound />} />
     </Routes>

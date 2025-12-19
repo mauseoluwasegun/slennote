@@ -355,7 +355,7 @@ export function Launch() {
 
         <div className="launch-cta">
           <a
-            href="https://github.com/waynesutton/slent"
+            href=""
             target="_blank"
             rel="noopener noreferrer"
             className="launch-button"
@@ -371,7 +371,7 @@ export function Launch() {
           <p>Built with React, TypeScript, and Convex</p>
           <p>
             <a
-              href="https://github.com/waynesutton/slent"
+              href=""
               target="_blank"
               rel="noopener noreferrer"
             >

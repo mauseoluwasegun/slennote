@@ -13,7 +13,8 @@ export default defineSchema({
   // Todos table stores all todo items with markdown support
   todos: defineTable({
     userId: v.string(), // From WorkOS auth
-    date: v.string(), // Format: YYYY-MM-DD
+    date: v.optional(v.string()), // Format: YYYY-MM-DD (optional when in a folder)
+    folderId: v.optional(v.id("folders")), // Optional folder association
     content: v.string(), // Markdown content
     type: v.union(
       v.literal("todo"),
@@ -28,12 +29,13 @@ export default defineSchema({
     collapsed: v.boolean(), // For header sections
     pinned: v.optional(v.boolean()), // For pinned todos
     backlog: v.optional(v.boolean()), // For backlog todos
-    tags: v.optional(v.array(v.string())), // Tags for organization
   })
     .index("by_user_and_date", ["userId", "date"])
     .index("by_user", ["userId"])
     .index("by_user_and_pinned", ["userId", "pinned"])
     .index("by_user_and_backlog", ["userId", "backlog"])
+    .index("by_user_and_folder", ["userId", "folderId"])
+    .index("by_user_completed_archived", ["userId", "completed", "archived"])
     .searchIndex("search_content", {
       searchField: "content",
       filterFields: ["userId"],
@@ -121,6 +123,15 @@ export default defineSchema({
     ),
     lastUpdated: v.number(), // Last update timestamp
     backgroundImageUrl: v.optional(v.string()), // Unsplash image URL for full-screen background
+    // New optional fields (safe, backward-compatible)
+    todoId: v.optional(v.union(v.id("todos"), v.null())),
+    todoTitle: v.optional(v.union(v.string(), v.null())),
+    // Goal 2: Pomodoro phase metadata (optional for backward compatibility)
+    phase: v.optional(v.union(v.literal("focus"), v.literal("break"))),
+    cycleIndex: v.optional(v.number()), // current loop, 0-based
+    totalCycles: v.optional(v.number()), // user/preset target
+    phaseDuration: v.optional(v.number()), // ms for the active block
+    breakDuration: v.optional(v.number()), // ms allocated for breaks
   }).index("by_user", ["userId"]),
 
   // Custom backlog label - allows renaming the backlog section
@@ -142,12 +153,33 @@ export default defineSchema({
     folderId: v.optional(v.id("folders")), // Optional folder association
     title: v.optional(v.string()), // Note title (defaults to "Untitled")
     content: v.string(), // Note content with markdown/code block support
+    format: v.optional(
+      v.union(
+        v.literal("plaintext"),
+        v.literal("markdown"),
+        v.literal("css"),
+        v.literal("javascript"),
+        v.literal("typescript"),
+        v.literal("html"),
+        v.literal("json"),
+        v.literal("python"),
+        v.literal("go"),
+        v.literal("rust"),
+      ),
+    ), // Format type for syntax highlighting and code wrapping
     order: v.number(), // Order for sorting tabs left-to-right
     collapsed: v.optional(v.boolean()), // For future collapsible functionality
     pinnedToTop: v.optional(v.boolean()), // For future pin functionality
+    archived: v.optional(v.boolean()), // Whether note is archived
+    imageIds: v.optional(v.array(v.id("_storage"))), // Array of storage IDs for uploaded images (first image is featured/OG image)
+    backgroundImageUrl: v.optional(v.string()), // Background image URL for the note
+    shareSlug: v.optional(v.string()), // Custom URL slug for sharing
+    isShared: v.optional(v.boolean()), // Whether note is currently shared
+    hideHeaderOnShare: v.optional(v.boolean()), // Whether to hide title header on shared view
   })
     .index("by_user_and_date", ["userId", "date"])
     .index("by_user_and_folder", ["userId", "folderId"])
+    .index("by_shareSlug", ["shareSlug"])
     .searchIndex("search_content", {
       searchField: "content",
       filterFields: ["userId"],
@@ -162,4 +194,51 @@ export default defineSchema({
     key: v.string(), // Unique key for the statistic (e.g., "fullPageNotesCreated")
     value: v.number(), // The cumulative count
   }).index("by_key", ["key"]),
+
+  // Streaks - tracks user streaks and progress
+  streaks: defineTable({
+    userId: v.string(),
+    currentStreak: v.number(),
+    longestStreak: v.number(),
+    lastCompletedDate: v.string(), // YYYY-MM-DD
+    weeklyProgress: v.any(), // Record<string, boolean> - Date string key -> completion status. Using v.any() to avoid validation issues with dynamic keys, though v.record() is preferred if strict.
+    totalTodosCompleted: v.number(),
+    hasUnseenBadges: v.optional(v.boolean()), // Track if user has unseen badge achievements
+  }).index("by_user", ["userId"]),
+
+  // AI Chat sessions - one per date for writing assistance
+  aiChats: defineTable({
+    userId: v.string(),
+    date: v.string(), // Format: YYYY-MM-DD
+    messages: v.array(
+      v.object({
+        role: v.union(v.literal("user"), v.literal("assistant")),
+        content: v.string(),
+        timestamp: v.number(),
+        // Attachments for images and links
+        attachments: v.optional(
+          v.array(
+            v.object({
+              type: v.union(v.literal("image"), v.literal("link")),
+              // For images: Convex storage ID
+              storageId: v.optional(v.id("_storage")),
+              // For links: URL and scraped content
+              url: v.optional(v.string()),
+              scrapedContent: v.optional(v.string()),
+              title: v.optional(v.string()),
+            }),
+          ),
+        ),
+      }),
+    ),
+    lastMessageAt: v.optional(v.number()),
+    // Searchable content field - concatenated message content for search
+    searchableContent: v.optional(v.string()),
+  })
+    .index("by_user_and_date", ["userId", "date"])
+    .index("by_user", ["userId"])
+    .searchIndex("search_messages", {
+      searchField: "searchableContent",
+      filterFields: ["userId"],
+    }),
 });
