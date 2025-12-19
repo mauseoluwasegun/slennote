@@ -1,4 +1,4 @@
-import { action, internalQuery } from "./_generated/server";
+import { action, internalQuery, query } from "./_generated/server";
 import { v } from "convex/values";
 import { api, internal } from "./_generated/api";
 
@@ -18,6 +18,8 @@ export const getDatabaseStats = internalQuery({
     archivedTodos: v.number(),
     pomodoroSessions: v.number(),
     totalFolders: v.number(),
+    totalChatMessages: v.number(),
+    totalChatReplies: v.number(),
   }),
   handler: async (ctx) => {
     // Get all todos (count only)
@@ -49,13 +51,30 @@ export const getDatabaseStats = internalQuery({
       .unique();
     const totalFullPageNotes = fullPageNotesStat?.value || 0;
 
-    // Get all pomodoro sessions (count only)
-    const allPomodoroSessions = await ctx.db.query("pomodoroSessions").collect();
-    const pomodoroSessions = allPomodoroSessions.length;
+    // Get cumulative pomodoro sessions started (tracks when user starts, not completes)
+    const pomodoroSessionsStat = await ctx.db
+      .query("statistics")
+      .withIndex("by_key", (q) => q.eq("key", "pomodoroSessionsStarted"))
+      .unique();
+    const pomodoroSessions = pomodoroSessionsStat?.value || 0;
 
     // Get all folders (count only)
     const allFolders = await ctx.db.query("folders").collect();
     const totalFolders = allFolders.length;
+
+    // Get all AI chats and count messages by role (count only, no content)
+    const allChats = await ctx.db.query("aiChats").collect();
+    let totalChatMessages = 0;
+    let totalChatReplies = 0;
+    for (const chat of allChats) {
+      for (const message of chat.messages) {
+        if (message.role === "user") {
+          totalChatMessages++;
+        } else if (message.role === "assistant") {
+          totalChatReplies++;
+        }
+      }
+    }
 
     return {
       totalTodos,
@@ -67,6 +86,8 @@ export const getDatabaseStats = internalQuery({
       archivedTodos,
       pomodoroSessions,
       totalFolders,
+      totalChatMessages,
+      totalChatReplies,
     };
   },
 });
@@ -88,10 +109,14 @@ export const getStats = action({
     archivedTodos: v.number(),
     pomodoroSessions: v.number(),
     totalFolders: v.number(),
+    totalChatMessages: v.number(),
+    totalChatReplies: v.number(),
   }),
   handler: async (ctx) => {
     // Get total users from Clerk via backend action
-    const totalUsers: number = await ctx.runAction(api.stats.getUserCountFromClerk);
+    const totalUsers: number = await ctx.runAction(
+      api.stats.getUserCountFromClerk,
+    );
 
     // Get database statistics via internal query
     const dbStats: {
@@ -104,6 +129,8 @@ export const getStats = action({
       archivedTodos: number;
       pomodoroSessions: number;
       totalFolders: number;
+      totalChatMessages: number;
+      totalChatReplies: number;
     } = await ctx.runQuery(internal.stats.getDatabaseStats);
 
     return {
@@ -137,11 +164,17 @@ export const getUserCountFromClerk = action({
       });
 
       if (!response.ok) {
-        console.error("Failed to fetch user count from Clerk:", response.statusText);
+        console.error(
+          "Failed to fetch user count from Clerk:",
+          response.statusText,
+        );
         return 0;
       }
 
-      const data = await response.json() as { object: string; total_count: number };
+      const data = (await response.json()) as {
+        object: string;
+        total_count: number;
+      };
       return data.total_count;
     } catch (error) {
       console.error("Error fetching user count from Clerk:", error);
@@ -149,4 +182,110 @@ export const getUserCountFromClerk = action({
     }
   },
 });
+
+/**
+ * Get user-specific statistics (excludes total users count).
+ * Returns only the authenticated user's personal stats.
+ */
+export const getUserStats = query({
+  args: {},
+  returns: v.union(
+    v.object({
+      totalTodos: v.number(),
+      completedTodos: v.number(),
+      pinnedTodos: v.number(),
+      totalNotes: v.number(),
+      totalFullPageNotes: v.number(),
+      activeTodos: v.number(),
+      archivedTodos: v.number(),
+      pomodoroSessions: v.number(),
+      totalFolders: v.number(),
+      totalChatMessages: v.number(),
+      totalChatReplies: v.number(),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const userId = identity.subject;
+
+    // Get all user's todos
+    const userTodos = await ctx.db
+      .query("todos")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    const totalTodos = userTodos.length;
+    const completedTodos = userTodos.filter((todo) => todo.completed).length;
+    const pinnedTodos = userTodos.filter((todo) => todo.pinned === true).length;
+    const activeTodos = userTodos.filter(
+      (todo) => !todo.archived && !todo.completed,
+    ).length;
+    const archivedTodos = userTodos.filter((todo) => todo.archived).length;
+
+    // Get all user's regular notes
+    const userNotes = await ctx.db
+      .query("notes")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
+      .collect();
+    const totalNotes = userNotes.length;
+
+    // Get all user's full-page notes
+    const userFullPageNotes = await ctx.db
+      .query("fullPageNotes")
+      .withIndex("by_user_and_date", (q) => q.eq("userId", userId))
+      .collect();
+    const totalFullPageNotes = userFullPageNotes.length;
+
+    // Get user's pomodoro sessions
+    const userPomodoroSessions = await ctx.db
+      .query("pomodoroSessions")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const pomodoroSessions = userPomodoroSessions.length;
+
+    // Get user's folders
+    const userFolders = await ctx.db
+      .query("folders")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    const totalFolders = userFolders.length;
+
+    // Get user's AI chats and count messages by role (count only, no content)
+    const userChats = await ctx.db
+      .query("aiChats")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+    let totalChatMessages = 0;
+    let totalChatReplies = 0;
+    for (const chat of userChats) {
+      for (const message of chat.messages) {
+        if (message.role === "user") {
+          totalChatMessages++;
+        } else if (message.role === "assistant") {
+          totalChatReplies++;
+        }
+      }
+    }
+
+    return {
+      totalTodos,
+      completedTodos,
+      pinnedTodos,
+      totalNotes,
+      totalFullPageNotes,
+      activeTodos,
+      archivedTodos,
+      pomodoroSessions,
+      totalFolders,
+      totalChatMessages,
+      totalChatReplies,
+    };
+  },
+});
+
 

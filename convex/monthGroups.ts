@@ -116,7 +116,13 @@ export const autoCreateMonthGroups = mutation({
       .collect();
 
     // Get unique dates
-    const uniqueDates = Array.from(new Set(todos.map((t) => t.date)));
+    const uniqueDates = Array.from(
+      new Set(
+        todos
+          .map((t) => t.date)
+          .filter((d): d is string => d !== undefined && d !== null),
+      ),
+    );
 
     // Group dates by month
     const datesByMonth = new Map<string, string[]>();
