@@ -320,6 +320,7 @@ export function FocusMode({ isOpen, onClose }: FocusModeProps) {
 
   if (!isOpen) return null;
 
+
   return (
     <div className="focus-mode-overlay">
       <div className="focus-mode-container">

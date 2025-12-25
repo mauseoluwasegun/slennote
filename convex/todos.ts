@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
+import { Doc, Id } from "./_generated/dataModel";
 
 // Get all todos for a specific date
 export const getTodosByDate = query({
@@ -346,8 +347,7 @@ export const createSubtask = mutation({
       throw new Error("Parent todo not found or unauthorized");
     }
 
-    // Use timestamp-based ordering instead of reading all subtasks
-    // This avoids write conflicts when creating multiple subtasks rapidly
+    // Use timestamp-based ordering instead of reading all todos
     const order = Date.now();
 
     return await ctx.db.insert("todos", {
@@ -395,7 +395,7 @@ export const updateTodo = mutation({
       throw new Error("Todo not found or unauthorized");
     }
 
-    const updates: Record<string, any> = {};
+    const updates: Partial<Doc<"todos">> = {};
     if (args.content !== undefined) updates.content = args.content;
     if (args.collapsed !== undefined) updates.collapsed = args.collapsed;
     if (args.pinned !== undefined) updates.pinned = args.pinned;

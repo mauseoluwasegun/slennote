@@ -284,13 +284,13 @@ export const generateResponse = action({
             const groqMessages: Array<{
                 role: "user" | "assistant" | "system";
                 content: string;
-            }> = recentMessages.map((msg: any) => ({
-                role: msg.role,
+            }> = recentMessages.map((msg: { role: "user" | "assistant"; content: string }) => ({
+                role: msg.role as "user" | "assistant",
                 content: msg.content,
             }));
 
             // Build user message content
-            let messageContent = userMessage;
+            let messageContent = noteContext ? noteContext + userMessage : userMessage;
             if (imageUrls.length > 0) {
                 messageContent += `\n\n[Note: ${imageUrls.length} image(s) attached but vision processing not available with current model]`;
             }
@@ -364,7 +364,7 @@ export const generateResponse = action({
                 });
                 messageContent = contentBlocks;
             } else {
-                messageContent = userMessage;
+                messageContent = noteContext ? noteContext + userMessage : userMessage;
             }
 
             claudeMessages.push({

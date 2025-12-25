@@ -1,5 +1,6 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
 
 // Search result type
 const searchResultValidator = v.object({
@@ -31,7 +32,7 @@ export const searchAll = query({
     }
 
     const results: Array<{
-      _id: any;
+      _id: Id<"todos"> | Id<"notes"> | Id<"fullPageNotes">;
       type: "todo" | "note" | "fullPageNote";
       content: string;
       title?: string;

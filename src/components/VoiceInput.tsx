@@ -357,7 +357,10 @@ export const VoiceInput = forwardRef<VoiceInputRef, VoiceInputProps>(
       if (engineRef.current === "webSpeech" && recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch { }
+        } catch {
+          // Ignore error when stopping
+          void 0;
+        }
         recognitionRef.current = null;
         setIsRecording(false);
         return;
