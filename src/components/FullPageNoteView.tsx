@@ -419,12 +419,12 @@ export function FullPageNoteView({ noteId }: FullPageNoteViewProps) {
 
     const needsSpace = textBefore.length > 0 && !textBefore.endsWith(" ") && !textBefore.endsWith("\n");
     const newText = textBefore + (needsSpace ? " " : "") + transcript + textAfter;
-    
+
     const newCursorPosition = cursorPosition + transcript.length + (needsSpace ? 1 : 0);
-    
+
     setContentInput(newText);
     cursorPositionRef.current = newCursorPosition;
-    
+
     setTimeout(() => {
       if (textarea) {
         textarea.focus();
@@ -592,7 +592,7 @@ export function FullPageNoteView({ noteId }: FullPageNoteViewProps) {
       <div className="fullpage-note-content-wrapper">
         {isEditMode ? (
           <div className="fullpage-note-editor-container">
-            <div className="voice-input-container">
+            <div className="voice-input-container" style={{ top: '12px', left: '12px', right: 'auto' }}>
               <VoiceInput
                 onTranscript={handleVoiceTranscript}
                 onError={handleVoiceError}
@@ -632,7 +632,7 @@ export function FullPageNoteView({ noteId }: FullPageNoteViewProps) {
               data-gramm="false"
               data-gramm_editor="false"
               data-enable-grammarly="false"
-              style={{ height: `${textareaHeight}px` }}
+              style={{ height: `${textareaHeight}px`, paddingLeft: '50px' }}
             />
             <div
               className="note-resize-handle"

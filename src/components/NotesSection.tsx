@@ -681,7 +681,7 @@ function NoteItem({
         <div className="note-content-wrapper">
           {isEditMode ? (
             <div className="note-editor-container" style={{ position: 'relative' }}>
-              <div className="voice-input-container" style={{ top: '8px', right: '8px' }}>
+              <div className="voice-input-container" style={{ top: '8px', left: '8px' }}>
                 <VoiceInput
                   ref={voiceInputRef}
                   onTranscript={handleVoiceTranscript}
@@ -723,7 +723,7 @@ function NoteItem({
                 data-gramm="false"
                 data-gramm_editor="false"
                 data-enable-grammarly="false"
-                style={{ height: `${textareaHeight}px`, paddingRight: '50px' }}
+                style={{ height: `${textareaHeight}px`, paddingLeft: '50px', paddingRight: '12px' }}
               />
               <div
                 className="note-resize-handle"
