@@ -256,4 +256,4 @@ export function KeyboardShortcutsModal({
     </div>,
     document.body,
   );
-}
+} 

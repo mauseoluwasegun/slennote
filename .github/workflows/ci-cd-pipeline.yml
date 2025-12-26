@@ -1,268 +1,268 @@
-# =============================================================================
-# SlentNote CI/CD Pipeline
-# =============================================================================
-# This pipeline handles continuous integration and deployment for the SlentNote
-# application - a React + Vite + TypeScript app with Convex backend and Vercel hosting.
-#
-# Triggers:
-#   - Push to main/master branches
-#   - Pull requests to main/master branches
-#   - Manual workflow dispatch
-#
-# Jobs:
-#   1. Lint & Type Check - Code quality validation
-#   2. Build - Production build verification
-#   3. Deploy Convex - Deploy Convex backend functions (main branch only)
-#   4. Deploy Vercel - Deploy frontend to Vercel (main branch only)
-# =============================================================================
+# # =============================================================================
+# # SlentNote CI/CD Pipeline
+# # =============================================================================
+# # This pipeline handles continuous integration and deployment for the SlentNote
+# # application - a React + Vite + TypeScript app with Convex backend and Vercel hosting.
+# #
+# # Triggers:
+# #   - Push to main/master branches
+# #   - Pull requests to main/master branches
+# #   - Manual workflow dispatch
+# #
+# # Jobs:
+# #   1. Lint & Type Check - Code quality validation
+# #   2. Build - Production build verification
+# #   3. Deploy Convex - Deploy Convex backend functions (main branch only)
+# #   4. Deploy Vercel - Deploy frontend to Vercel (main branch only)
+# # =============================================================================
 
-name: CI/CD Pipeline
+# name: CI/CD Pipeline
 
-on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
-    branches:
-      - main
-      - master
-  workflow_dispatch:  # Allow manual trigger
+# on:
+#   push:
+#     branches:
+#       - main
+#       - master
+#   pull_request:
+#     branches:
+#       - main
+#       - master
+#   workflow_dispatch:  # Allow manual trigger
 
-# Prevent concurrent runs on the same branch
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+# # Prevent concurrent runs on the same branch
+# concurrency:
+#   group: ${{ github.workflow }}-${{ github.ref }}
+#   cancel-in-progress: true
 
-env:
-  NODE_VERSION: '20'
+# env:
+#   NODE_VERSION: '20'
 
-jobs:
-  # ===========================================================================
-  # Job 1: Lint & Type Check
-  # ===========================================================================
-  lint-and-typecheck:
-    name: 🔍 Lint & Type Check
-    runs-on: ubuntu-latest
+# jobs:
+#   # ===========================================================================
+#   # Job 1: Lint & Type Check
+#   # ===========================================================================
+#   lint-and-typecheck:
+#     name: 🔍 Lint & Type Check
+#     runs-on: ubuntu-latest
     
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 📦 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
 
-      - name: 📚 Install dependencies
-        run: npm ci
+#       - name: 📚 Install dependencies
+#         run: npm ci
 
-      - name: 🔎 Run ESLint
-        run: npm run lint
-        continue-on-error: false
+#       - name: 🔎 Run ESLint
+#         run: npm run lint
+#         continue-on-error: false
 
-      - name: 📝 TypeScript Type Check
-        run: npx tsc --noEmit
-        continue-on-error: false
+#       - name: 📝 TypeScript Type Check
+#         run: npx tsc --noEmit
+#         continue-on-error: false
 
-  # ===========================================================================
-  # Job 2: Build
-  # ===========================================================================
-  build:
-    name: 🏗️ Build
-    runs-on: ubuntu-latest
-    needs: lint-and-typecheck
+#   # ===========================================================================
+#   # Job 2: Build
+#   # ===========================================================================
+#   build:
+#     name: 🏗️ Build
+#     runs-on: ubuntu-latest
+#     needs: lint-and-typecheck
     
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 📦 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
 
-      - name: 📚 Install dependencies
-        run: npm ci
+#       - name: 📚 Install dependencies
+#         run: npm ci
 
-      - name: 🏗️ Build application
-        run: npm run build
-        env:
-          # Add any required build-time environment variables here
-          # These should be set as GitHub secrets
-          VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
-          VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
+#       - name: 🏗️ Build application
+#         run: npm run build
+#         env:
+#           # Add any required build-time environment variables here
+#           # These should be set as GitHub secrets
+#           VITE_CONVEX_URL: ${{ secrets.VITE_CONVEX_URL }}
+#           VITE_CLERK_PUBLISHABLE_KEY: ${{ secrets.VITE_CLERK_PUBLISHABLE_KEY }}
 
-      - name: 📤 Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: dist
-          path: dist
-          retention-days: 7
+#       - name: 📤 Upload build artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: dist
+#           path: dist
+#           retention-days: 7
 
-  # ===========================================================================
-  # Job 3: Deploy Convex Backend
-  # ===========================================================================
-  deploy-convex:
-    name: 🚀 Deploy Convex
-    runs-on: ubuntu-latest
-    needs: build
-    # Only deploy on push to main/master (not on PRs)
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+#   # ===========================================================================
+#   # Job 3: Deploy Convex Backend
+#   # ===========================================================================
+#   deploy-convex:
+#     name: 🚀 Deploy Convex
+#     runs-on: ubuntu-latest
+#     needs: build
+#     # Only deploy on push to main/master (not on PRs)
+#     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: 📦 Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: 📦 Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
 
-      - name: 📚 Install dependencies
-        run: npm ci
+#       - name: 📚 Install dependencies
+#         run: npm ci
 
-      - name: 🚀 Deploy Convex functions
-        run: npx convex deploy --yes
-        env:
-          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+#       - name: 🚀 Deploy Convex functions
+#         run: npx convex deploy --yes
+#         env:
+#           CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
 
-  # ===========================================================================
-  # Job 4: Deploy to Vercel (Production)
-  # ===========================================================================
-  deploy-vercel-production:
-    name: 🚀 Deploy to Vercel (Production)
-    runs-on: ubuntu-latest
-    needs: build
-    # Only deploy on push to main/master (not on PRs)
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+#   # ===========================================================================
+#   # Job 4: Deploy to Vercel (Production)
+#   # ===========================================================================
+#   deploy-vercel-production:
+#     name: 🚀 Deploy to Vercel (Production)
+#     runs-on: ubuntu-latest
+#     needs: build
+#     # Only deploy on push to main/master (not on PRs)
+#     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
     
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: � Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: � Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
 
-      - name: 📚 Install dependencies
-        run: npm ci
+#       - name: 📚 Install dependencies
+#         run: npm ci
 
-      - name: 📥 Install Vercel CLI
-        run: npm install --global vercel@latest
+#       - name: 📥 Install Vercel CLI
+#         run: npm install --global vercel@latest
 
-      - name: 🔗 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+#       - name: 🔗 Pull Vercel Environment Information
+#         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: 🏗️ Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+#       - name: 🏗️ Build Project Artifacts
+#         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: 🚀 Deploy to Vercel (Production)
-        id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          echo "deploy_url=$url" >> $GITHUB_OUTPUT
+#       - name: 🚀 Deploy to Vercel (Production)
+#         id: deploy
+#         run: |
+#           url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+#           echo "deploy_url=$url" >> $GITHUB_OUTPUT
 
-      - name: 📝 Deployment Summary
-        run: |
-          echo "## 🚀 Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** ${{ steps.deploy.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+#       - name: 📝 Deployment Summary
+#         run: |
+#           echo "## 🚀 Production Deployment Successful!" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**URL:** ${{ steps.deploy.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
 
-  # ===========================================================================
-  # Job 5: Deploy Preview (for Pull Requests)
-  # ===========================================================================
-  deploy-vercel-preview:
-    name: 👀 Deploy Preview to Vercel
-    runs-on: ubuntu-latest
-    needs: build
-    if: github.event_name == 'pull_request'
+#   # ===========================================================================
+#   # Job 5: Deploy Preview (for Pull Requests)
+#   # ===========================================================================
+#   deploy-vercel-preview:
+#     name: 👀 Deploy Preview to Vercel
+#     runs-on: ubuntu-latest
+#     needs: build
+#     if: github.event_name == 'pull_request'
     
-    steps:
-      - name: 📥 Checkout repository
-        uses: actions/checkout@v4
+#     steps:
+#       - name: 📥 Checkout repository
+#         uses: actions/checkout@v4
 
-      - name: � Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
+#       - name: � Setup Node.js
+#         uses: actions/setup-node@v4
+#         with:
+#           node-version: ${{ env.NODE_VERSION }}
+#           cache: 'npm'
 
-      - name: � Install dependencies
-        run: npm ci
+#       - name: � Install dependencies
+#         run: npm ci
 
-      - name: 📥 Install Vercel CLI
-        run: npm install --global vercel@latest
+#       - name: 📥 Install Vercel CLI
+#         run: npm install --global vercel@latest
 
-      - name: 🔗 Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+#       - name: 🔗 Pull Vercel Environment Information
+#         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: 🏗️ Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+#       - name: 🏗️ Build Project Artifacts
+#         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: 👀 Deploy Preview to Vercel
-        id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          echo "deploy_url=$url" >> $GITHUB_OUTPUT
+#       - name: 👀 Deploy Preview to Vercel
+#         id: deploy
+#         run: |
+#           url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+#           echo "deploy_url=$url" >> $GITHUB_OUTPUT
 
-      - name: 💬 Comment Preview URL on PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const previewUrl = '${{ steps.deploy.outputs.deploy_url }}';
-            const body = `## 🔍 Preview Deployment Ready!
+#       - name: 💬 Comment Preview URL on PR
+#         uses: actions/github-script@v7
+#         with:
+#           script: |
+#             const previewUrl = '${{ steps.deploy.outputs.deploy_url }}';
+#             const body = `## 🔍 Preview Deployment Ready!
 
-            🌐 **Preview URL:** ${previewUrl}
+#             🌐 **Preview URL:** ${previewUrl}
 
-            | Details | Value |
-            |---------|-------|
-            | **Commit** | \`${{ github.event.pull_request.head.sha }}\` |
-            | **Branch** | \`${{ github.head_ref }}\` |
-            | **PR** | #${{ github.event.pull_request.number }} |
+#             | Details | Value |
+#             |---------|-------|
+#             | **Commit** | \`${{ github.event.pull_request.head.sha }}\` |
+#             | **Branch** | \`${{ github.head_ref }}\` |
+#             | **PR** | #${{ github.event.pull_request.number }} |
 
-            > This preview will be automatically updated with each commit to this PR.`;
+#             > This preview will be automatically updated with each commit to this PR.`;
             
-            // Find existing comment
-            const { data: comments } = await github.rest.issues.listComments({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-            });
+#             // Find existing comment
+#             const { data: comments } = await github.rest.issues.listComments({
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#               issue_number: context.issue.number,
+#             });
             
-            const botComment = comments.find(comment => 
-              comment.user.type === 'Bot' && 
-              comment.body.includes('Preview Deployment Ready')
-            );
+#             const botComment = comments.find(comment => 
+#               comment.user.type === 'Bot' && 
+#               comment.body.includes('Preview Deployment Ready')
+#             );
             
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                comment_id: botComment.id,
-                body: body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: body
-              });
-            }
+#             if (botComment) {
+#               await github.rest.issues.updateComment({
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 comment_id: botComment.id,
+#                 body: body
+#               });
+#             } else {
+#               await github.rest.issues.createComment({
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 issue_number: context.issue.number,
+#                 body: body
+#               });
+#             }
 
-      - name: 📝 Preview Summary
-        run: |
-          echo "## 👀 Preview Deployment Ready!" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Preview URL:** ${{ steps.deploy.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** \`${{ github.head_ref }}\`" >> $GITHUB_STEP_SUMMARY
+#       - name: 📝 Preview Summary
+#         run: |
+#           echo "## 👀 Preview Deployment Ready!" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**Preview URL:** ${{ steps.deploy.outputs.deploy_url }}" >> $GITHUB_STEP_SUMMARY
+#           echo "" >> $GITHUB_STEP_SUMMARY
+#           echo "**PR:** #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+#           echo "**Branch:** \`${{ github.head_ref }}\`" >> $GITHUB_STEP_SUMMARY
