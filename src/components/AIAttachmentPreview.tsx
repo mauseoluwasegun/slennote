@@ -1,6 +1,7 @@
 import { X, ExternalLink, Image as ImageIcon, Link as LinkIcon } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { Id } from "../../convex/_generated/dataModel";
 import { useState, useEffect } from "react";
 
 interface Attachment {
@@ -24,7 +25,7 @@ export function AIAttachmentPreview({ attachment, onRemove, readonly = false }: 
     const storageUrl = useQuery(
         api.aiChats.getStorageUrl,
         attachment.type === "image" && attachment.storageId && !attachment.previewUrl
-            ? { storageId: attachment.storageId as any }
+            ? { storageId: attachment.storageId as Id<"_storage"> }
             : "skip"
     );
     const [imageUrl, setImageUrl] = useState<string | null>(attachment.previewUrl || null);

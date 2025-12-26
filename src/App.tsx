@@ -27,10 +27,25 @@ import {
   ExternalLinkIcon,
   FileTextIcon,
 } from "@radix-ui/react-icons";
-import { Id } from "../convex/_generated/dataModel";
+import { Id, Doc } from "../convex/_generated/dataModel";
 import { useTheme } from "./context/ThemeContext";
 import { triggerSelectionHaptic, triggerSuccessHaptic } from "./lib/haptics";
 import "./styles/global.css";
+
+interface DemoTodo {
+  _id: string;
+  _creationTime: number;
+  content: string;
+  completed: boolean;
+  archived: boolean;
+  pinned?: boolean;
+  backlog?: boolean;
+  order: number;
+  type: "todo" | "h1" | "h2" | "h3";
+  date?: string;
+  folderId?: string;
+  parentId?: string;
+}
 
 function App() {
   const navigate = useNavigate();
@@ -112,7 +127,7 @@ function App() {
   const mainContentRef = useRef<HTMLDivElement>(null);
 
   // Demo mode for logged out users (max 3 todos, no persistence)
-  const [demoTodos, setDemoTodos] = useState<any[]>([]);
+  const [demoTodos, setDemoTodos] = useState<DemoTodo[]>([]);
 
   // Full-page notes state
   const [showFullPageNotes, setShowFullPageNotes] = useState(false);
@@ -574,7 +589,7 @@ function App() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeTodos, focusedTodoIndex, lastCompletedTodo, isAuthenticated]);
+  }, [activeTodos, focusedTodoIndex, lastCompletedTodo, isAuthenticated, createSubtask, updateTodo, navigate]);
 
   // Reset focused index when todos change
   useEffect(() => {

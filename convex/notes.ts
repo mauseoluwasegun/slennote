@@ -1,5 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { Doc } from "./_generated/dataModel";
 
 // Get all notes for a specific date
 export const getNotesByDate = query({
@@ -88,7 +89,7 @@ export const updateNote = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     // Build updates object only with provided fields
-    const updates: Record<string, any> = {};
+    const updates: Partial<Doc<"notes">> = {};
     if (args.title !== undefined) updates.title = args.title;
     if (args.content !== undefined) updates.content = args.content;
     if (args.collapsed !== undefined) updates.collapsed = args.collapsed;

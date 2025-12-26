@@ -4325,7 +4325,7 @@ export function Sidebar({
           className="sidebar-title"
           style={{ textDecoration: "none", color: "inherit" }}
         >
-          better todo
+          Slentnote
         </a>
         {onToggleCollapse && (
           <Tooltip>
@@ -5734,7 +5734,7 @@ export function Sidebar({
               </button>
             </TooltipTrigger>
             <TooltipContent side="right" sideOffset={8}>
-              About better todo
+              About Slentnote
             </TooltipContent>
           </Tooltip>
         </div>

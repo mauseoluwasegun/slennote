@@ -1,6 +1,6 @@
 import { query, mutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 
 // Get full-page notes by their IDs (for tabs)
 export const getFullPageNotesByIds = query({
@@ -340,7 +340,7 @@ export const updateFullPageNote = mutation({
     }
 
     // Build updates object only with provided fields
-    const updates: Record<string, any> = {};
+    const updates: Partial<Doc<"fullPageNotes">> = {};
     if (args.title !== undefined) updates.title = args.title;
     if (args.content !== undefined) updates.content = args.content;
     if (args.format !== undefined) updates.format = args.format;

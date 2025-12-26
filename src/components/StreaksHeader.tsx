@@ -21,7 +21,7 @@ function RiseIcon({ size = 18 }: { size?: number }) {
 export function StreaksHeader() {
     const navigate = useNavigate();
     const { isAuthenticated } = useConvexAuth();
-    const streakStatus = useQuery(api.streaks.getStreakStatus);
+    const streakStatus = useQuery(api.streaks.getStreak);
 
     // Only show for authenticated users
     if (!isAuthenticated || !streakStatus) return null;
@@ -39,7 +39,7 @@ export function StreaksHeader() {
 
     // Count incomplete days
     const incompleteDays = weekDays.filter((day) => {
-        const progress = streakStatus.weeklyProgress as Record<string, boolean>;
+        const progress = (streakStatus.weeklyProgress || {}) as Record<string, boolean>;
         return !progress[day];
     }).length;
 

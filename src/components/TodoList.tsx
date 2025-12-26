@@ -369,30 +369,28 @@ export const TodoList = forwardRef<TodoListRef, TodoListProps>(
     const handleVoiceTranscript = (transcript: string, isFinal: boolean) => {
       console.log("Voice transcript:", { transcript, isFinal, baseContent: baseContentRef.current });
 
-      // Remove any status suffixes from base content
+      // Remove any status suffixes before appending transcript
       const cleanBase = baseContentRef.current.replace(/ \(Listening\.\.\.\)$/, "").replace(/ \(Transcribing\.\.\.\)$/, "");
 
       if (!isFinal) {
-        // Interim result from Web Speech API - it already contains the full phrase being spoken
-        // So we show: original content + space + current interim transcript
+        // Interim result - show in real-time
         const needsSpace = cleanBase.length > 0 && !cleanBase.endsWith(" ") && !cleanBase.endsWith("\n");
         const displayText = cleanBase + (needsSpace ? " " : "") + transcript;
         setNewTodoContent(displayText);
-        interimTranscriptRef.current = transcript; // Track current interim
         console.log("Setting interim text:", displayText);
       } else {
-        // Final result - commit the transcript
-        // Use the final transcript (which replaces any interim result for this phrase)
+        // Final result - commit and save
         const needsSpace = cleanBase.length > 0 && !cleanBase.endsWith(" ") && !cleanBase.endsWith("\n");
         const finalText = cleanBase + (needsSpace ? " " : "") + transcript.trim();
 
-        // Update base content so subsequent speech is appended to this
+        // Update base content for next transcript
         baseContentRef.current = finalText;
         interimTranscriptRef.current = "";
 
-        // Update state
-        setNewTodoContent(finalText);
-        console.log("Setting final text:", finalText);
+        // Update state and remove status indicators
+        const cleanFinal = finalText.replace(/ \(Listening\.\.\.\)$/, "").replace(/ \(Transcribing\.\.\.\)$/, "");
+        setNewTodoContent(cleanFinal);
+        console.log("Setting final text:", cleanFinal);
       }
     };
 
@@ -694,38 +692,6 @@ export const TodoList = forwardRef<TodoListRef, TodoListProps>(
                 geminiApiKey={import.meta.env.VITE_GEMINI_API_KEY || ""}
               />
             </div>
-            {!isMobile && newTodoContent.trim() && (
-              <div
-                style={{
-                  position: "absolute",
-                  right: "8px",
-                  bottom: "8px",
-                  display: "flex",
-                  gap: "8px",
-                  zIndex: 9,
-                }}
-              >
-                <button
-                  onClick={() => {
-                    handleAddTodo();
-                    if (todoInputRef.current) {
-                      todoInputRef.current.style.height = "auto";
-                    }
-                  }}
-                  title="Add as Todo"
-                  className="pomodoro-control-button"
-                >
-                  Add
-                </button>
-                <button
-                  onClick={() => setNewTodoContent("")}
-                  title="Clear Text"
-                  className="pomodoro-control-button"
-                >
-                  Clear
-                </button>
-              </div>
-            )}
             {isMobile && newTodoContent.trim() && (
               <button
                 className="mobile-add-button"

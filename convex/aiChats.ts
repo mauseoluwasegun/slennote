@@ -249,8 +249,8 @@ export const getMessages = query({
 
 // Create a new chat (with current date and initial message)
 export const createChat = mutation({
-    args: { message: v.string() },
-    handler: async (ctx, args) => {
+    args: {},
+    handler: async (ctx) => {
         const userId = (await ctx.auth.getUserIdentity())?.subject;
         if (!userId) {
             throw new Error("Not authenticated");
