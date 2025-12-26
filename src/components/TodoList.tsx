@@ -564,7 +564,7 @@ export const TodoList = forwardRef<TodoListRef, TodoListProps>(
 
         {/* Notion-like inline input - hide on pinned view and backlog view */}
         {!isPinnedView && !isBacklogView && (
-          <div className="inline-todo-input" style={{ position: "relative", paddingRight: "50px" }}>
+          <div className="inline-todo-input" style={{ position: "relative", paddingLeft: "48px", paddingRight: "12px" }}>
             <textarea
               ref={todoInputRef}
               className="notion-input"
@@ -678,7 +678,7 @@ export const TodoList = forwardRef<TodoListRef, TodoListProps>(
             <div
               style={{
                 position: "absolute",
-                right: isMobile && newTodoContent.trim() ? "50px" : "8px",
+                left: "4px",
                 bottom: "8px",
                 zIndex: 10,
               }}
