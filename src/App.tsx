@@ -33,8 +33,9 @@ import { triggerSelectionHaptic, triggerSuccessHaptic } from "./lib/haptics";
 import "./styles/global.css";
 
 interface DemoTodo {
-  _id: string;
+  _id: Id<"todos">;
   _creationTime: number;
+  userId: string;
   content: string;
   completed: boolean;
   archived: boolean;
@@ -44,7 +45,8 @@ interface DemoTodo {
   type: "todo" | "h1" | "h2" | "h3";
   date?: string;
   folderId?: string;
-  parentId?: string;
+  parentId?: Id<"todos">;
+  collapsed: boolean;
 }
 
 function App() {
@@ -460,8 +462,8 @@ function App() {
         if (activeTodos.length > 0 && focusedTodoIndex >= 0) {
           const todo = activeTodos[focusedTodoIndex];
           if (todo && !todo.completed) {
-            setLastCompletedTodo(todo._id);
-            updateTodo({ id: todo._id, completed: true });
+            setLastCompletedTodo(todo._id as Id<"todos">);
+            updateTodo({ id: todo._id as Id<"todos">, completed: true });
           }
         }
       }
@@ -472,7 +474,7 @@ function App() {
         if (activeTodos.length > 0 && focusedTodoIndex >= 0) {
           const todo = activeTodos[focusedTodoIndex];
           if (todo && !todo.completed && !todo.archived) {
-            updateTodo({ id: todo._id, pinned: !todo.pinned });
+            updateTodo({ id: todo._id as Id<"todos">, pinned: !todo.pinned });
           }
         }
       }
@@ -487,7 +489,7 @@ function App() {
         ) {
           const todo = activeTodos[focusedTodoIndex];
           if (todo && !todo.completed && !todo.archived) {
-            createSubtask({ parentId: todo._id, content: "" });
+            createSubtask({ parentId: todo._id as Id<"todos">, content: "" });
           }
         }
       }
@@ -506,7 +508,7 @@ function App() {
         if (activeTodos.length > 0 && focusedTodoIndex >= 0) {
           const todo = activeTodos[focusedTodoIndex];
           if (todo) {
-            setOpenMenuForTodoId(todo._id);
+            setOpenMenuForTodoId(todo._id as Id<"todos">);
             setOpenMenuTrigger(Date.now());
           }
         }

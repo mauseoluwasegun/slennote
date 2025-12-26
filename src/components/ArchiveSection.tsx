@@ -21,7 +21,7 @@ interface Todo {
   _id: Id<"todos">;
   _creationTime: number;
   userId: string;
-  date: string;
+  date?: string;
   content: string;
   type: "todo" | "h1" | "h2" | "h3";
   completed: boolean;
@@ -157,7 +157,7 @@ export function ArchiveSection({
                     onMoveToPreviousDay={() => onMoveToPreviousDay(todo._id)}
                     onMoveToNextDay={() => onMoveToNextDay(todo._id)}
                     onMoveToTomorrow={() => onMoveToTomorrow(todo._id)}
-                    onMoveToToday={() => {}} // Not used in archive section
+                    onMoveToToday={() => { }} // Not used in archive section
                     onMoveToCustomDate={(date) =>
                       onMoveToCustomDate(todo._id, date)
                     }

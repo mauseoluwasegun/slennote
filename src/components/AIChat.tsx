@@ -128,7 +128,7 @@ export function AIChat() {
 
             // Create chat if doesn't exist
             if (!currentChatId) {
-                currentChatId = await createChat({ message: currentInput || "New Chat" });
+                currentChatId = await createChat();
                 setChatId(currentChatId);
             }
 

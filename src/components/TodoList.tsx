@@ -29,7 +29,7 @@ interface Todo {
   _id: Id<"todos">;
   _creationTime: number;
   userId: string;
-  date: string;
+  date?: string;
   content: string;
   type: "todo" | "h1" | "h2" | "h3";
   completed: boolean;
